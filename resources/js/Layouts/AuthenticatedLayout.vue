@@ -100,6 +100,12 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     🛡️ Auditoría
                                 </NavLink>
+                                <NavLink
+                                    :href="route('configuracion.index')"
+                                    :active="route().current('configuracion.*')"
+                                >
+                                    ⚙️ Configuración
+                                </NavLink>
                             </div>
                         </div>
 
@@ -132,6 +138,11 @@ const showingNavigationDropdown = ref(false);
                                     </template>
 
                                     <template #content>
+                                        <DropdownLink
+                                            :href="route('configuracion.index')"
+                                        >
+                                            ⚙️ Configuración
+                                        </DropdownLink>
                                         <DropdownLink
                                             :href="route('profile.edit')"
                                         >
@@ -267,6 +278,12 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('auditorias.*')"
                         >
                             🛡️ Auditoría
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('configuracion.index')"
+                            :active="route().current('configuracion.*')"
+                        >
+                            ⚙️ Configuración
                         </ResponsiveNavLink>
                     </div>
 

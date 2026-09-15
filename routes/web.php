@@ -83,6 +83,20 @@ Route::middleware(['auth', 'verified'])->group(function ()
     Route::get('/auditorias', [App\Http\Controllers\AuditoriasController::class, 'Index'])->name('auditorias.index');
     Route::get('/auditorias/{id_auditoria}', [App\Http\Controllers\AuditoriasController::class, 'Show'])->name('auditorias.show');
     Route::get('/auditorias/exportar/csv', [App\Http\Controllers\AuditoriasController::class, 'Exportar'])->name('auditorias.exportar');
+
+    // Centro de Configuración
+    Route::get('/configuracion', [App\Http\Controllers\ConfiguracionController::class, 'Index'])->name('configuracion.index');
+    Route::post('/configuracion/usuarios', [App\Http\Controllers\ConfiguracionController::class, 'GuardarUsuario'])->name('configuracion.usuarios.store');
+    Route::put('/configuracion/usuarios/{id_usuario}', [App\Http\Controllers\ConfiguracionController::class, 'GuardarUsuario'])->name('configuracion.usuarios.update');
+    Route::patch('/configuracion/usuarios/{id_usuario}/estado', [App\Http\Controllers\ConfiguracionController::class, 'AlternarEstadoUsuario'])->name('configuracion.usuarios.estado');
+
+    Route::post('/configuracion/categorias', [App\Http\Controllers\ConfiguracionController::class, 'GuardarCategoria'])->name('configuracion.categorias.store');
+    Route::put('/configuracion/categorias/{id_categoria}', [App\Http\Controllers\ConfiguracionController::class, 'GuardarCategoria'])->name('configuracion.categorias.update');
+    Route::patch('/configuracion/categorias/{id_categoria}/estado', [App\Http\Controllers\ConfiguracionController::class, 'AlternarEstadoCategoria'])->name('configuracion.categorias.estado');
+
+    Route::post('/configuracion/marcas', [App\Http\Controllers\ConfiguracionController::class, 'GuardarMarca'])->name('configuracion.marcas.store');
+    Route::put('/configuracion/marcas/{id_marca}', [App\Http\Controllers\ConfiguracionController::class, 'GuardarMarca'])->name('configuracion.marcas.update');
+    Route::patch('/configuracion/marcas/{id_marca}/estado', [App\Http\Controllers\ConfiguracionController::class, 'AlternarEstadoMarca'])->name('configuracion.marcas.estado');
 });
 
 Route::middleware('auth')->group(function ()
