@@ -41,4 +41,19 @@ class MetodosPagoModel extends Model
     {
         return $this->hasMany(PagosVentaModel::class, 'id_metodo_pago', 'id_metodo_pago');
     }
+
+    public function EsCredito(): bool
+    {
+        return $this->tipo === 'CREDITO';
+    }
+
+    public function EsEfectivo(): bool
+    {
+        return $this->tipo === 'EFECTIVO';
+    }
+
+    public function EsFinanciamiento(): bool
+    {
+        return $this->tipo === 'FINANCIAMIENTO';
+    }
 }

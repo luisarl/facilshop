@@ -29,4 +29,8 @@ Route::prefix('v1')->group(function ()
     // Inventario: Ajustes
     Route::post('/inventory/adjustments', [App\Http\Controllers\InventarioAjustesController::class, 'ApiStore']);
     Route::get('/inventory/adjustments/types/{naturaleza}', [App\Http\Controllers\InventarioAjustesController::class, 'ApiTipos']);
+
+    // Punto de Venta (POS)
+    Route::post('/pos/checkout', [App\Http\Controllers\PosController::class, 'ApiCheckout']);
+    Route::post('/pos/simulate-cashea', [App\Http\Controllers\PosController::class, 'SimularCashea']);
 });

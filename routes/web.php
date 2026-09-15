@@ -62,6 +62,12 @@ Route::middleware(['auth', 'verified'])->group(function ()
     Route::post('/inventario/conteos/{id_conteo}/detalles', [App\Http\Controllers\InventarioConteosController::class, 'ActualizarDetalles'])->name('inventario.conteos.detalles');
     Route::post('/inventario/conteos/{id_conteo}/aplicar', [App\Http\Controllers\InventarioConteosController::class, 'Aplicar'])->name('inventario.conteos.aplicar');
     Route::post('/inventario/conteos/{id_conteo}/cancelar', [App\Http\Controllers\InventarioConteosController::class, 'Cancelar'])->name('inventario.conteos.cancelar');
+
+    // Punto de Venta (POS)
+    Route::get('/pos', [App\Http\Controllers\PosController::class, 'Index'])->name('pos.index');
+    Route::post('/pos/checkout', [App\Http\Controllers\PosController::class, 'Checkout'])->name('pos.checkout');
+    Route::post('/pos/simular-cashea', [App\Http\Controllers\PosController::class, 'SimularCashea'])->name('pos.cashea.simular');
+    Route::get('/pos/ticket/{id_venta}', [App\Http\Controllers\PosController::class, 'Ticket'])->name('pos.ticket');
 });
 
 Route::middleware('auth')->group(function ()

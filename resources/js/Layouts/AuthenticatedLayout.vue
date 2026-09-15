@@ -58,6 +58,13 @@ const showingNavigationDropdown = ref(false);
                                     Control de Caja
                                 </NavLink>
                                 <NavLink
+                                    :href="route('pos.index')"
+                                    :active="route().current('pos.*')"
+                                    class="font-black text-emerald-600 dark:text-emerald-400"
+                                >
+                                    🛒 Punto de Venta (POS)
+                                </NavLink>
+                                <NavLink
                                     :href="route('inventario.productos.index')"
                                     :active="route().current('inventario.productos.*')"
                                 >
@@ -199,6 +206,13 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('caja.*')"
                         >
                             Control de Caja
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('pos.index')"
+                            :active="route().current('pos.*')"
+                            class="font-bold text-emerald-600 dark:text-emerald-400"
+                        >
+                            🛒 Punto de Venta (POS)
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             :href="route('inventario.productos.index')"
