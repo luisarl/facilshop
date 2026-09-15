@@ -41,6 +41,27 @@ Route::middleware(['auth', 'verified'])->group(function ()
     Route::post('/caja/abrir', [CajaTurnosController::class, 'abrirTurno'])->name('caja.abrir');
     Route::post('/caja/{id_caja_turno}/cerrar', [CajaTurnosController::class, 'cerrarTurno'])->name('caja.cerrar');
     Route::get('/caja/activo', [CajaTurnosController::class, 'current'])->name('caja.activo');
+
+    // Inventario: Productos
+    Route::get('/inventario/productos', [App\Http\Controllers\ProductosController::class, 'Index'])->name('inventario.productos.index');
+    Route::post('/inventario/productos', [App\Http\Controllers\ProductosController::class, 'Store'])->name('inventario.productos.store');
+    Route::put('/inventario/productos/{id_producto}', [App\Http\Controllers\ProductosController::class, 'Update'])->name('inventario.productos.update');
+    Route::get('/inventario/productos/{id_producto}/movimientos', [App\Http\Controllers\ProductosController::class, 'Movimientos'])->name('inventario.productos.movimientos');
+
+    // Inventario: Ajustes
+    Route::get('/inventario/ajustes', [App\Http\Controllers\InventarioAjustesController::class, 'Index'])->name('inventario.ajustes.index');
+    Route::get('/inventario/ajustes/crear', [App\Http\Controllers\InventarioAjustesController::class, 'Create'])->name('inventario.ajustes.create');
+    Route::post('/inventario/ajustes', [App\Http\Controllers\InventarioAjustesController::class, 'Store'])->name('inventario.ajustes.store');
+    Route::get('/inventario/ajustes/{id_ajuste}', [App\Http\Controllers\InventarioAjustesController::class, 'Show'])->name('inventario.ajustes.show');
+    Route::get('/inventario/ajustes/tipos/{naturaleza}', [App\Http\Controllers\InventarioAjustesController::class, 'ApiTipos'])->name('inventario.ajustes.tipos');
+
+    // Inventario: Conteos Físicos
+    Route::get('/inventario/conteos', [App\Http\Controllers\InventarioConteosController::class, 'Index'])->name('inventario.conteos.index');
+    Route::post('/inventario/conteos', [App\Http\Controllers\InventarioConteosController::class, 'Store'])->name('inventario.conteos.store');
+    Route::get('/inventario/conteos/{id_conteo}', [App\Http\Controllers\InventarioConteosController::class, 'Worksheet'])->name('inventario.conteos.worksheet');
+    Route::post('/inventario/conteos/{id_conteo}/detalles', [App\Http\Controllers\InventarioConteosController::class, 'ActualizarDetalles'])->name('inventario.conteos.detalles');
+    Route::post('/inventario/conteos/{id_conteo}/aplicar', [App\Http\Controllers\InventarioConteosController::class, 'Aplicar'])->name('inventario.conteos.aplicar');
+    Route::post('/inventario/conteos/{id_conteo}/cancelar', [App\Http\Controllers\InventarioConteosController::class, 'Cancelar'])->name('inventario.conteos.cancelar');
 });
 
 Route::middleware('auth')->group(function ()

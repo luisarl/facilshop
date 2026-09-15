@@ -21,4 +21,12 @@ Route::prefix('v1')->group(function ()
     Route::post('/shifts/open', [CajaTurnosController::class, 'abrirTurno']);
     Route::post('/shifts/close/{id_caja_turno}', [CajaTurnosController::class, 'cerrarTurno']);
     Route::get('/shifts/current', [CajaTurnosController::class, 'current']);
+
+    // Inventario: Productos
+    Route::get('/products', [App\Http\Controllers\ProductosController::class, 'ApiListar']);
+    Route::get('/products/barcode', [App\Http\Controllers\ProductosController::class, 'ApiBuscarPorCodigo']);
+
+    // Inventario: Ajustes
+    Route::post('/inventory/adjustments', [App\Http\Controllers\InventarioAjustesController::class, 'ApiStore']);
+    Route::get('/inventory/adjustments/types/{naturaleza}', [App\Http\Controllers\InventarioAjustesController::class, 'ApiTipos']);
 });

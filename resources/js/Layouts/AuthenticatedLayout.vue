@@ -57,6 +57,24 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Control de Caja
                                 </NavLink>
+                                <NavLink
+                                    :href="route('inventario.productos.index')"
+                                    :active="route().current('inventario.productos.*')"
+                                >
+                                    Productos
+                                </NavLink>
+                                <NavLink
+                                    :href="route('inventario.ajustes.index')"
+                                    :active="route().current('inventario.ajustes.*')"
+                                >
+                                    Ajustes
+                                </NavLink>
+                                <NavLink
+                                    :href="route('inventario.conteos.index')"
+                                    :active="route().current('inventario.conteos.*')"
+                                >
+                                    Tomas Físicas
+                                </NavLink>
                             </div>
                         </div>
 
@@ -181,6 +199,24 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('caja.*')"
                         >
                             Control de Caja
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('inventario.productos.index')"
+                            :active="route().current('inventario.productos.*')"
+                        >
+                            Productos
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('inventario.ajustes.index')"
+                            :active="route().current('inventario.ajustes.*')"
+                        >
+                            Ajustes
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('inventario.conteos.index')"
+                            :active="route().current('inventario.conteos.*')"
+                        >
+                            Tomas Físicas
                         </ResponsiveNavLink>
                     </div>
 
