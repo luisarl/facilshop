@@ -39,6 +39,24 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Dashboard
                                 </NavLink>
+                                <NavLink
+                                    :href="route('monedas.index')"
+                                    :active="route().current('monedas.*')"
+                                >
+                                    Monedas y Tasas
+                                </NavLink>
+                                <NavLink
+                                    :href="route('metodos-pago.index')"
+                                    :active="route().current('metodos-pago.*')"
+                                >
+                                    Métodos de Pago
+                                </NavLink>
+                                <NavLink
+                                    :href="route('caja.index')"
+                                    :active="route().current('caja.*')"
+                                >
+                                    Control de Caja
+                                </NavLink>
                             </div>
                         </div>
 
@@ -146,6 +164,24 @@ const showingNavigationDropdown = ref(false);
                         >
                             Dashboard
                         </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('monedas.index')"
+                            :active="route().current('monedas.*')"
+                        >
+                            Monedas y Tasas
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('metodos-pago.index')"
+                            :active="route().current('metodos-pago.*')"
+                        >
+                            Métodos de Pago
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('caja.index')"
+                            :active="route().current('caja.*')"
+                        >
+                            Control de Caja
+                        </ResponsiveNavLink>
                     </div>
 
                     <!-- Responsive Settings Options -->
@@ -188,6 +224,36 @@ const showingNavigationDropdown = ref(false);
                     <slot name="header" />
                 </div>
             </header>
+
+            <!-- Flash Messages -->
+            <div
+                v-if="$page.props.flash?.success || $page.props.flash?.error"
+                class="mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8"
+            >
+                <div
+                    v-if="$page.props.flash?.success"
+                    class="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-800 shadow-sm dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300"
+                >
+                    <div class="flex items-center space-x-3">
+                        <svg class="h-5 w-5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="text-sm font-medium">{{ $page.props.flash.success }}</span>
+                    </div>
+                </div>
+
+                <div
+                    v-if="$page.props.flash?.error"
+                    class="flex items-center justify-between rounded-lg border border-rose-200 bg-rose-50 p-4 text-rose-800 shadow-sm dark:border-rose-800 dark:bg-rose-950/50 dark:text-rose-300"
+                >
+                    <div class="flex items-center space-x-3">
+                        <svg class="h-5 w-5 text-rose-600 dark:text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="text-sm font-medium">{{ $page.props.flash.error }}</span>
+                    </div>
+                </div>
+            </div>
 
             <!-- Page Content -->
             <main>
