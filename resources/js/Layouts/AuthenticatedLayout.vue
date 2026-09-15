@@ -82,6 +82,18 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Tomas Físicas
                                 </NavLink>
+                                <NavLink
+                                    :href="route('facturacion.index')"
+                                    :active="route().current('facturacion.*')"
+                                >
+                                    Facturación
+                                </NavLink>
+                                <NavLink
+                                    :href="route('clientes.index')"
+                                    :active="route().current('clientes.*')"
+                                >
+                                    Clientes
+                                </NavLink>
                             </div>
                         </div>
 
@@ -231,6 +243,18 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('inventario.conteos.*')"
                         >
                             Tomas Físicas
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('facturacion.index')"
+                            :active="route().current('facturacion.*')"
+                        >
+                            Facturación
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('clientes.index')"
+                            :active="route().current('clientes.*')"
+                        >
+                            Clientes
                         </ResponsiveNavLink>
                     </div>
 

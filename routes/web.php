@@ -68,6 +68,19 @@ Route::middleware(['auth', 'verified'])->group(function ()
     Route::post('/pos/checkout', [App\Http\Controllers\PosController::class, 'Checkout'])->name('pos.checkout');
     Route::post('/pos/simular-cashea', [App\Http\Controllers\PosController::class, 'SimularCashea'])->name('pos.cashea.simular');
     Route::get('/pos/ticket/{id_venta}', [App\Http\Controllers\PosController::class, 'Ticket'])->name('pos.ticket');
+
+    // Clientes y Créditos
+    Route::get('/clientes', [App\Http\Controllers\ClientesController::class, 'Index'])->name('clientes.index');
+    Route::post('/clientes', [App\Http\Controllers\ClientesController::class, 'Store'])->name('clientes.store');
+    Route::put('/clientes/{id_cliente}', [App\Http\Controllers\ClientesController::class, 'Update'])->name('clientes.update');
+    Route::post('/clientes/{id_cliente}/abonar', [App\Http\Controllers\ClientesController::class, 'Abonar'])->name('clientes.abonar');
+    Route::get('/clientes/{id_cliente}/estado-cuenta', [App\Http\Controllers\ClientesController::class, 'EstadoCuenta'])->name('clientes.estado-cuenta');
+
+    // Facturación Interna y Comprobantes
+    Route::get('/facturacion', [App\Http\Controllers\FacturacionController::class, 'Index'])->name('facturacion.index');
+    Route::get('/facturacion/{id_venta}', [App\Http\Controllers\FacturacionController::class, 'Show'])->name('facturacion.show');
+    Route::get('/facturacion/{id_venta}/escpos', [App\Http\Controllers\FacturacionController::class, 'Escpos'])->name('facturacion.escpos');
+    Route::post('/facturacion/{id_venta}/anular', [App\Http\Controllers\FacturacionController::class, 'Anular'])->name('facturacion.anular');
 });
 
 Route::middleware('auth')->group(function ()

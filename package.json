@@ -21,6 +21,7 @@
         "vue": "^3.4.0"
     },
     "dependencies": {
-        "pinia": "^4.0.3"
+        "pinia": "^4.0.3",
+        "qrcode": "^1.5.4"
     }
 }

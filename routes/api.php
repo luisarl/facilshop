@@ -33,4 +33,16 @@ Route::prefix('v1')->group(function ()
     // Punto de Venta (POS)
     Route::post('/pos/checkout', [App\Http\Controllers\PosController::class, 'ApiCheckout']);
     Route::post('/pos/simulate-cashea', [App\Http\Controllers\PosController::class, 'SimularCashea']);
+
+    // Clientes y Créditos
+    Route::get('/customers', [App\Http\Controllers\ClientesController::class, 'ApiIndex']);
+    Route::post('/customers', [App\Http\Controllers\ClientesController::class, 'ApiStore']);
+    Route::post('/customers/{id_cliente}/pay-credit', [App\Http\Controllers\ClientesController::class, 'ApiAbonar']);
+    Route::get('/customers/{id_cliente}/statement', [App\Http\Controllers\ClientesController::class, 'EstadoCuenta']);
+
+    // Facturación
+    Route::get('/invoices', [App\Http\Controllers\FacturacionController::class, 'ApiIndex']);
+    Route::get('/invoices/{id_venta}', [App\Http\Controllers\FacturacionController::class, 'ApiShow']);
+    Route::post('/invoices/{id_venta}/cancel', [App\Http\Controllers\FacturacionController::class, 'ApiAnular']);
 });
+
