@@ -94,6 +94,12 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Clientes
                                 </NavLink>
+                                <NavLink
+                                    :href="route('auditorias.index')"
+                                    :active="route().current('auditorias.*')"
+                                >
+                                    🛡️ Auditoría
+                                </NavLink>
                             </div>
                         </div>
 
@@ -255,6 +261,12 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('clientes.*')"
                         >
                             Clientes
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('auditorias.index')"
+                            :active="route().current('auditorias.*')"
+                        >
+                            🛡️ Auditoría
                         </ResponsiveNavLink>
                     </div>
 

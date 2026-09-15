@@ -20,10 +20,7 @@ Route::get('/', function ()
 
 Route::middleware(['auth', 'verified'])->group(function ()
 {
-    Route::get('/dashboard', function ()
-    {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'Index'])->name('dashboard');
 
     // Monedas y Tasas
     Route::get('/monedas', [MonedasController::class, 'index'])->name('monedas.index');
@@ -81,6 +78,11 @@ Route::middleware(['auth', 'verified'])->group(function ()
     Route::get('/facturacion/{id_venta}', [App\Http\Controllers\FacturacionController::class, 'Show'])->name('facturacion.show');
     Route::get('/facturacion/{id_venta}/escpos', [App\Http\Controllers\FacturacionController::class, 'Escpos'])->name('facturacion.escpos');
     Route::post('/facturacion/{id_venta}/anular', [App\Http\Controllers\FacturacionController::class, 'Anular'])->name('facturacion.anular');
+
+    // Pistas de Auditoría (Audit Trail)
+    Route::get('/auditorias', [App\Http\Controllers\AuditoriasController::class, 'Index'])->name('auditorias.index');
+    Route::get('/auditorias/{id_auditoria}', [App\Http\Controllers\AuditoriasController::class, 'Show'])->name('auditorias.show');
+    Route::get('/auditorias/exportar/csv', [App\Http\Controllers\AuditoriasController::class, 'Exportar'])->name('auditorias.exportar');
 });
 
 Route::middleware('auth')->group(function ()

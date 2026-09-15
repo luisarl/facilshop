@@ -44,5 +44,12 @@ Route::prefix('v1')->group(function ()
     Route::get('/invoices', [App\Http\Controllers\FacturacionController::class, 'ApiIndex']);
     Route::get('/invoices/{id_venta}', [App\Http\Controllers\FacturacionController::class, 'ApiShow']);
     Route::post('/invoices/{id_venta}/cancel', [App\Http\Controllers\FacturacionController::class, 'ApiAnular']);
+
+    // Pistas de Auditoría
+    Route::get('/audits', [App\Http\Controllers\AuditoriasController::class, 'ApiIndex']);
+    Route::get('/audits/{id_auditoria}', [App\Http\Controllers\AuditoriasController::class, 'Show']);
+
+    // Dashboard Analytics
+    Route::get('/reports/dashboard', [App\Http\Controllers\DashboardController::class, 'ApiMetrics']);
 });
 
