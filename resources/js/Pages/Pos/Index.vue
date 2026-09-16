@@ -1,10 +1,13 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { usePosStore } from '@/Stores/usePosStore';
 import ModalCobro from './Partials/ModalCobro.vue';
 import ModalTicketsPausados from './Partials/ModalTicketsPausados.vue';
 import TicketImprimible from './Partials/TicketImprimible.vue';
+import ModalNuevoClientePos from './Partials/ModalNuevoClientePos.vue';
+import ModalCobrarAbonoPos from './Partials/ModalCobrarAbonoPos.vue';
+import TicketAbonoImprimible from './Partials/TicketAbonoImprimible.vue';
 
 const props = defineProps({
     turno_activo: Object,
@@ -20,14 +23,38 @@ const props = defineProps({
 
 const posStore = usePosStore();
 
+// Catálogo reactivo de productos para actualizar existencias en tiempo real
+const listaProductos = ref([...(props.productos || [])]);
+
+watch(() => props.productos, (nuevosProductos) =>
+{
+    if (nuevosProductos && Array.isArray(nuevosProductos))
+    {
+        listaProductos.value = [...nuevosProductos];
+    }
+}, { deep: true, immediate: true });
+
+// Catálogo reactivo de clientes para sincronización en tiempo real
+const listaClientes = ref([...(props.clientes || [])]);
+
+watch(() => props.clientes, (nuevosClientes) =>
+{
+    if (nuevosClientes && Array.isArray(nuevosClientes))
+    {
+        listaClientes.value = [...nuevosClientes];
+    }
+}, { deep: true, immediate: true });
+
 // Sincronizar tasa BCV en el store
-onMounted(() => {
+onMounted(() =>
+{
     posStore.setTasaVes(props.tasa_ves);
     EnfocarBuscador();
     window.addEventListener('keydown', ManejarAtajosTeclado);
 });
 
-onUnmounted(() => {
+onUnmounted(() =>
+{
     window.removeEventListener('keydown', ManejarAtajosTeclado);
 });
 
@@ -42,53 +69,94 @@ const mensajeAlerta = ref(null);
 const modalCobroAbierto = ref(false);
 const modalTicketsPausadosAbierto = ref(false);
 const ventaRecienteParaTicket = ref(null);
+const modalNuevoClienteAbierto = ref(false);
+const modalCobrarAbonoAbierto = ref(false);
+const abonoRecienteParaTicket = ref(null);
 
-const EnfocarBuscador = () => {
-    nextTick(() => {
-        if (inputCodigoBarras.value) {
+const EnfocarBuscador = () =>
+{
+    nextTick(() =>
+    {
+        if (inputCodigoBarras.value)
+        {
             inputCodigoBarras.value.focus();
         }
     });
 };
 
-// Atajos de Teclado Globales (F2, F4, F8, Shift+F8, Esc)
-const ManejarAtajosTeclado = (e) => {
+// Atajos de Teclado Globales (F2, F4, F7, F8, Shift+F8, Esc)
+const ManejarAtajosTeclado = (e) =>
+{
     // Si hay un modal abierto y presiona Escape, cerrar
-    if (e.key === 'Escape') {
+    if (e.key === 'Escape')
+    {
+        if (abonoRecienteParaTicket.value)
+        {
+            abonoRecienteParaTicket.value = null;
+            return;
+        }
+        if (modalNuevoClienteAbierto.value)
+        {
+            modalNuevoClienteAbierto.value = false;
+            return;
+        }
+        if (modalCobrarAbonoAbierto.value)
+        {
+            modalCobrarAbonoAbierto.value = false;
+            return;
+        }
+        if (ventaRecienteParaTicket.value)
+        {
+            IniciarNuevaVenta();
+            return;
+        }
         modalCobroAbierto.value = false;
         modalTicketsPausadosAbierto.value = false;
-        ventaRecienteParaTicket.value = null;
         EnfocarBuscador();
         return;
     }
 
+    // F7: Abrir Cobro de Abono a Crédito
+    if (e.key === 'F7')
+    {
+        e.preventDefault();
+        modalCobrarAbonoAbierto.value = true;
+        return;
+    }
+
     // F2: Enfocar escáner / buscador
-    if (e.key === 'F2') {
+    if (e.key === 'F2')
+    {
         e.preventDefault();
         EnfocarBuscador();
         return;
     }
 
     // F4: Abrir Modal de Cobro
-    if (e.key === 'F4') {
+    if (e.key === 'F4')
+    {
         e.preventDefault();
-        if (posStore.items.length > 0) {
+        if (posStore.items.length > 0)
+        {
             modalCobroAbierto.value = true;
         }
         return;
     }
 
     // Shift + F8: Ver Tickets Pausados
-    if (e.key === 'F8' && e.shiftKey) {
+    if (e.key === 'F8' && e.shiftKey)
+    {
         e.preventDefault();
         modalTicketsPausadosAbierto.value = true;
         return;
     }
 
     // F8: Pausar Ticket Actual
-    if (e.key === 'F8' && !e.shiftKey) {
+    if (e.key === 'F8' && !e.shiftKey)
+    {
         e.preventDefault();
-        if (posStore.items.length > 0) {
+        if (posStore.items.length > 0)
+        {
             PausarVentaActual();
         }
         return;
@@ -96,14 +164,17 @@ const ManejarAtajosTeclado = (e) => {
 };
 
 // Filtro de productos
-const productosFiltrados = computed(() => {
-    let prods = props.productos;
+const productosFiltrados = computed(() =>
+{
+    let prods = listaProductos.value;
 
-    if (categoriaSeleccionada.value) {
+    if (categoriaSeleccionada.value)
+    {
         prods = prods.filter(p => p.id_categoria === categoriaSeleccionada.value);
     }
 
-    if (busquedaTexto.value) {
+    if (busquedaTexto.value)
+    {
         const termino = busquedaTexto.value.toLowerCase();
         prods = prods.filter(p =>
             p.nombre.toLowerCase().includes(termino) ||
@@ -116,22 +187,32 @@ const productosFiltrados = computed(() => {
 });
 
 // Escaneo rápido
-const ProcesarEscaneo = () => {
+const ProcesarEscaneo = () =>
+{
     const codigo = codigoEscaneado.value.trim();
-    if (!codigo) return;
+    if (!codigo)
+    {
+        return;
+    }
 
-    const producto = props.productos.find(p =>
+    const producto = listaProductos.value.find(p =>
         p.codigo_barras === codigo || p.sku.toLowerCase() === codigo.toLowerCase()
     );
 
-    if (producto) {
-        if (producto.stock_actual <= 0) {
+    if (producto)
+    {
+        if (producto.stock_actual <= 0)
+        {
             MostrarAlerta(`El producto "${producto.nombre}" no tiene existencias disponibles.`, 'error');
-        } else {
+        }
+        else
+        {
             posStore.agregarProducto(producto);
             MostrarAlerta(`+1 ${producto.nombre} agregado al carrito.`, 'exito');
         }
-    } else {
+    }
+    else
+    {
         MostrarAlerta(`Producto con código "${codigo}" no encontrado en el catálogo.`, 'error');
     }
 
@@ -139,8 +220,10 @@ const ProcesarEscaneo = () => {
     EnfocarBuscador();
 };
 
-const AgregarAlCarrito = (producto) => {
-    if (producto.stock_actual <= 0) {
+const AgregarAlCarrito = (producto) =>
+{
+    if (producto.stock_actual <= 0)
+    {
         MostrarAlerta(`El producto "${producto.nombre}" está agotado.`, 'error');
         return;
     }
@@ -148,28 +231,160 @@ const AgregarAlCarrito = (producto) => {
     EnfocarBuscador();
 };
 
-const PausarVentaActual = () => {
-    if (posStore.items.length === 0) return;
+const PausarVentaActual = () =>
+{
+    if (posStore.items.length === 0)
+    {
+        return;
+    }
     const pausado = posStore.pausarTicket();
-    if (pausado) {
+    if (pausado)
+    {
         MostrarAlerta('Ticket pausado y colocado en cola de espera (F8).', 'exito');
     }
 };
 
-const AbrirCobro = () => {
-    if (posStore.items.length === 0) return;
+const AbrirCobro = () =>
+{
+    if (posStore.items.length === 0)
+    {
+        return;
+    }
     modalCobroAbierto.value = true;
 };
 
-const OnVentaCompletada = (venta) => {
+const ActualizarStockLocal = (venta) =>
+{
+    if (!venta?.detalles || !Array.isArray(venta.detalles))
+    {
+        return;
+    }
+
+    venta.detalles.forEach(det =>
+    {
+        const IdProd = Number(det.id_producto);
+        const prod = listaProductos.value.find(p => p.id_producto === IdProd);
+        if (prod)
+        {
+            if (det.producto && typeof det.producto.stock_actual !== 'undefined')
+            {
+                prod.stock_actual = Number(det.producto.stock_actual);
+            }
+            else
+            {
+                const CantidadVendida = Number(det.cantidad) || 0;
+                prod.stock_actual = Math.max(0, (Number(prod.stock_actual) || 0) - CantidadVendida);
+            }
+            prod.es_stock_bajo = prod.stock_actual <= (Number(prod.stock_minimo) || 0);
+        }
+    });
+};
+
+const IniciarNuevaVenta = () =>
+{
+    ventaRecienteParaTicket.value = null;
+    posStore.limpiarCarrito();
+    EnfocarBuscador();
+
+    router.reload({
+        only: ['productos'],
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: (page) =>
+        {
+            if (page.props.productos && Array.isArray(page.props.productos))
+            {
+                listaProductos.value = [...page.props.productos];
+            }
+        },
+    });
+};
+
+const OnVentaCompletada = (venta) =>
+{
     modalCobroAbierto.value = false;
     ventaRecienteParaTicket.value = venta;
+    ActualizarStockLocal(venta);
+
+    router.reload({
+        only: ['productos'],
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: (page) =>
+        {
+            if (page.props.productos && Array.isArray(page.props.productos))
+            {
+                listaProductos.value = [...page.props.productos];
+            }
+        },
+    });
+
     MostrarAlerta(`Venta ${venta.numero_comprobante} completada exitosamente.`, 'exito');
 };
 
-const MostrarAlerta = (mensaje, tipo = 'info') => {
+const OnClienteCreado = (nuevoCliente) =>
+{
+    modalNuevoClienteAbierto.value = false;
+    if (!listaClientes.value.some(c => c.id_cliente === nuevoCliente.id_cliente))
+    {
+        listaClientes.value.push(nuevoCliente);
+    }
+    posStore.setCliente(nuevoCliente);
+    MostrarAlerta(`Cliente "${nuevoCliente.nombre}" registrado y seleccionado.`, 'exito');
+
+    router.reload({
+        only: ['clientes'],
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: (page) =>
+        {
+            if (page.props.clientes && Array.isArray(page.props.clientes))
+            {
+                listaClientes.value = [...page.props.clientes];
+            }
+        },
+    });
+};
+
+const OnAbonoCompletado = (abono) =>
+{
+    modalCobrarAbonoAbierto.value = false;
+    abonoRecienteParaTicket.value = abono;
+
+    if (abono?.cliente)
+    {
+        const index = listaClientes.value.findIndex(c => c.id_cliente === abono.cliente.id_cliente);
+        if (index !== -1)
+        {
+            listaClientes.value[index] = abono.cliente;
+        }
+        if (posStore.clienteSeleccionado?.id_cliente === abono.cliente.id_cliente)
+        {
+            posStore.setCliente(abono.cliente);
+        }
+    }
+
+    router.reload({
+        only: ['clientes'],
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: (page) =>
+        {
+            if (page.props.clientes && Array.isArray(page.props.clientes))
+            {
+                listaClientes.value = [...page.props.clientes];
+            }
+        },
+    });
+
+    MostrarAlerta(`Abono ${abono.comprobante_abono} registrado exitosamente.`, 'exito');
+};
+
+const MostrarAlerta = (mensaje, tipo = 'info') =>
+{
     mensajeAlerta.value = { mensaje, tipo };
-    setTimeout(() => {
+    setTimeout(() =>
+    {
         mensajeAlerta.value = null;
     }, 3000);
 };
@@ -216,19 +431,31 @@ const MostrarAlerta = (mensaje, tipo = 'info') => {
                 </div>
             </div>
 
-            <!-- ATAJOS DE TECLADO Y COLA DE TICKETS -->
-            <div class="flex items-center gap-3">
-                <div class="hidden lg:flex items-center gap-2 text-xs text-gray-400 font-mono">
+            <!-- ATAJOS DE TECLADO Y ACCIONES RÁPIDAS -->
+            <div class="flex items-center gap-2.5">
+                <div class="hidden lg:flex items-center gap-1.5 text-xs text-gray-400 font-mono">
                     <span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">F2: Buscar</span>
                     <span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">F4: Cobrar</span>
+                    <span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">F7: Abonos</span>
                     <span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">F8: Pausar</span>
                 </div>
+
+                <!-- BOTÓN COBRAR ABONO DE CRÉDITO -->
+                <button
+                    type="button"
+                    @click="modalCobrarAbonoAbierto = true"
+                    class="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold rounded-xl text-xs flex items-center gap-1.5 transition border border-emerald-500/30"
+                    title="Cobrar saldo pendiente a crédito (F7)"
+                >
+                    <span>💳 Cobrar Abono</span>
+                    <span class="text-[10px] text-gray-400 font-mono hidden sm:inline">(F7)</span>
+                </button>
 
                 <!-- BOTÓN COLA DE TICKETS (PARKING) -->
                 <button
                     type="button"
                     @click="modalTicketsPausadosAbierto = true"
-                    class="relative px-3.5 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold rounded-xl text-xs flex items-center gap-1.5 transition border border-amber-500/30"
+                    class="relative px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold rounded-xl text-xs flex items-center gap-1.5 transition border border-amber-500/30"
                 >
                     <span>⏸️ Pausados</span>
                     <span
@@ -379,20 +606,54 @@ const MostrarAlerta = (mensaje, tipo = 'info') => {
             <div class="w-full md:w-96 lg:w-[420px] bg-white dark:bg-gray-900 border-t md:border-t-0 md:border-l border-gray-200 dark:border-gray-800 flex flex-col justify-between shrink-0 shadow-lg">
 
                 <!-- ENCABEZADO DEL TICKET (CLIENTE Y COMPROBANTE) -->
-                <div class="p-4 border-b border-gray-200 dark:border-gray-800 space-y-3 shrink-0">
-                    <div class="flex items-center justify-between">
-                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                            Cliente
-                        </label>
+                <div class="p-4 border-b border-gray-200 dark:border-gray-800 space-y-2.5 shrink-0">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-1.5">
+                            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                Cliente
+                            </label>
+                            <button
+                                type="button"
+                                @click="modalNuevoClienteAbierto = true"
+                                class="px-2 py-0.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 rounded-lg text-[11px] font-bold transition flex items-center gap-0.5"
+                                title="Registrar nuevo cliente"
+                            >
+                                <span>+</span> Nuevo
+                            </button>
+                        </div>
                         <select
                             :value="posStore.clienteSeleccionado?.id_cliente"
-                            @change="posStore.setCliente(clientes.find(c => c.id_cliente === Number($event.target.value)))"
+                            @change="posStore.setCliente(listaClientes.find(c => c.id_cliente === Number($event.target.value)))"
                             class="py-1 px-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-semibold max-w-[200px]"
                         >
-                            <option v-for="c in clientes" :key="c.id_cliente" :value="c.id_cliente">
+                            <option v-for="c in listaClientes" :key="c.id_cliente" :value="c.id_cliente">
                                 {{ c.nombre }} ({{ c.identificacion }})
                             </option>
                         </select>
+                    </div>
+
+                    <!-- BADGE DE DEUDA SI EL CLIENTE SELECCIONADO TIENE SALDO PENDIENTE -->
+                    <div
+                        v-if="posStore.clienteSeleccionado && Number(posStore.clienteSeleccionado.saldo_pendiente) > 0"
+                        class="p-2.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-xl flex items-center justify-between gap-2 text-xs"
+                    >
+                        <div>
+                            <span class="text-[10px] font-bold text-rose-500 uppercase block">Saldo Deudor</span>
+                            <span class="font-mono font-black text-rose-700 dark:text-rose-300 text-sm">
+                                ${{ Number(posStore.clienteSeleccionado.saldo_pendiente).toFixed(2) }}
+                            </span>
+                            <span class="text-[10px] text-gray-500 font-mono block">
+                                ≈ Bs. {{ (Number(posStore.clienteSeleccionado.saldo_pendiente) * tasa_ves).toFixed(2) }}
+                            </span>
+                        </div>
+
+                        <button
+                            type="button"
+                            @click="modalCobrarAbonoAbierto = true"
+                            class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition shadow-sm shrink-0"
+                        >
+                            Cobrar Abono
+                        </button>
                     </div>
 
                     <div class="flex items-center justify-between">
@@ -590,7 +851,34 @@ const MostrarAlerta = (mensaje, tipo = 'info') => {
             v-if="ventaRecienteParaTicket"
             :venta="ventaRecienteParaTicket"
             :tasa-ves="tasa_ves"
-            @cerrar="ventaRecienteParaTicket = null"
+            @cerrar="IniciarNuevaVenta"
+        />
+
+        <!-- MODAL REGISTRO RÁPIDO DE CLIENTE DESDE POS -->
+        <ModalNuevoClientePos
+            v-if="modalNuevoClienteAbierto"
+            @cerrar="modalNuevoClienteAbierto = false"
+            @cliente-creado="OnClienteCreado"
+        />
+
+        <!-- MODAL COBRAR SALDO / ABONO DE CLIENTE (F7) -->
+        <ModalCobrarAbonoPos
+            v-if="modalCobrarAbonoAbierto"
+            :clientes="listaClientes"
+            :cliente-seleccionado="posStore.clienteSeleccionado"
+            :metodos-pago="metodos_pago"
+            :monedas="monedas"
+            :tasa-ves="tasa_ves"
+            @cerrar="modalCobrarAbonoAbierto = false"
+            @abono-completado="OnAbonoCompletado"
+        />
+
+        <!-- MODAL TICKET COMPROBANTE DE ABONO IMPRIMIBLE -->
+        <TicketAbonoImprimible
+            v-if="abonoRecienteParaTicket"
+            :abono="abonoRecienteParaTicket"
+            :tasa-ves="tasa_ves"
+            @cerrar="abonoRecienteParaTicket = null"
         />
 
     </div>

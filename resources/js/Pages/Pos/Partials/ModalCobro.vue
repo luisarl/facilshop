@@ -32,83 +32,145 @@ const datosCashea = ref({
 });
 
 // Inicializar con un pago por defecto (Efectivo USD por el total)
-onMounted(() => {
-    const metodoEfectivoUsd = props.metodosPago.find(m => m.codigo === 'EFECTIVO_USD') || props.metodosPago[0];
-    if (metodoEfectivoUsd) {
+onMounted(() =>
+{
+    const MetodoEfectivoUsd = props.metodosPago.find(m => m.codigo === 'EFECTIVO_USD') || props.metodosPago[0];
+    if (MetodoEfectivoUsd)
+    {
+        const MonedaEncontrada = props.monedas?.find(m => m.id_moneda === MetodoEfectivoUsd.id_moneda) || MetodoEfectivoUsd.moneda;
+        const Tasa = Number(MonedaEncontrada?.tasa_cambio) || (MonedaEncontrada?.codigo === 'VES' ? Number(props.tasaVes) : 1.0) || 1.0;
+        const EsPrincipal = Boolean(MonedaEncontrada?.es_principal);
+
+        const MontoInicial = EsPrincipal
+            ? Number(posStore.totalUsd)
+            : Number((posStore.totalUsd * Tasa).toFixed(2));
+        const MontoBaseInicial = EsPrincipal
+            ? Number(posStore.totalUsd)
+            : (Tasa > 0 ? Number((MontoInicial / Tasa).toFixed(2)) : Number(posStore.totalUsd));
+
         pagos.value.push({
-            id_metodo_pago: metodoEfectivoUsd.id_metodo_pago,
-            metodo: metodoEfectivoUsd,
-            id_moneda: metodoEfectivoUsd.id_moneda,
-            moneda: metodoEfectivoUsd.moneda,
-            monto: posStore.totalUsd,
-            tasa_cambio: Number(metodoEfectivoUsd.moneda?.tasa_cambio) || 1.0,
-            monto_base: posStore.totalUsd,
+            id_metodo_pago: MetodoEfectivoUsd.id_metodo_pago,
+            metodo: MetodoEfectivoUsd,
+            id_moneda: MetodoEfectivoUsd.id_moneda,
+            moneda: MonedaEncontrada || MetodoEfectivoUsd.moneda,
+            monto: MontoInicial,
+            tasa_cambio: Tasa,
+            monto_base: MontoBaseInicial,
             referencia: '',
         });
     }
     RecalcularCashea();
 });
 
-const AgregarMetodoPago = () => {
+const AgregarMetodoPago = () =>
+{
     const restante = saldoRestanteUsd.value > 0 ? saldoRestanteUsd.value : 0;
-    const metodoDefault = props.metodosPago[0];
+    const MetodoDefault = props.metodosPago[0];
+    if (!MetodoDefault)
+    {
+        return;
+    }
 
-    const tasa = Number(metodoDefault.moneda?.tasa_cambio) || 1.0;
-    const montoOriginal = metodoDefault.moneda?.codigo === 'VES'
-        ? Number((restante * tasa).toFixed(2))
-        : restante;
+    const MonedaEncontrada = props.monedas?.find(m => m.id_moneda === MetodoDefault.id_moneda) || MetodoDefault.moneda;
+    const Tasa = Number(MonedaEncontrada?.tasa_cambio) || (MonedaEncontrada?.codigo === 'VES' ? Number(props.tasaVes) : 1.0) || 1.0;
+    const EsPrincipal = Boolean(MonedaEncontrada?.es_principal);
+
+    const MontoOriginal = EsPrincipal
+        ? Number(restante.toFixed(2))
+        : Number((restante * Tasa).toFixed(2));
+    const MontoBase = EsPrincipal
+        ? Number(restante.toFixed(2))
+        : (Tasa > 0 ? Number((MontoOriginal / Tasa).toFixed(2)) : restante);
 
     pagos.value.push({
-        id_metodo_pago: metodoDefault.id_metodo_pago,
-        metodo: metodoDefault,
-        id_moneda: metodoDefault.id_moneda,
-        moneda: metodoDefault.moneda,
-        monto: montoOriginal,
-        tasa_cambio: tasa,
-        monto_base: restante,
+        id_metodo_pago: MetodoDefault.id_metodo_pago,
+        metodo: MetodoDefault,
+        id_moneda: MetodoDefault.id_moneda,
+        moneda: MonedaEncontrada || MetodoDefault.moneda,
+        monto: MontoOriginal,
+        tasa_cambio: Tasa,
+        monto_base: MontoBase,
         referencia: '',
     });
 };
 
-const QuitarPago = (index) => {
+const QuitarPago = (index) =>
+{
     pagos.value.splice(index, 1);
     VerificarSiUsaCashea();
 };
 
-const CambiarMetodo = (pago, idMetodo) => {
-    const nuevoMetodo = props.metodosPago.find(m => m.id_metodo_pago === idMetodo);
-    if (!nuevoMetodo) return;
+const CambiarMetodo = (pago, IdMetodo) =>
+{
+    const NuevoMetodo = props.metodosPago.find(m => m.id_metodo_pago === IdMetodo);
+    if (!NuevoMetodo)
+    {
+        return;
+    }
 
-    pago.metodo = nuevoMetodo;
-    pago.id_moneda = nuevoMetodo.id_moneda;
-    pago.moneda = nuevoMetodo.moneda;
-    pago.tasa_cambio = Number(nuevoMetodo.moneda?.tasa_cambio) || 1.0;
+    const IdMonedaAnterior = pago.id_moneda;
+    const MonedaEncontrada = props.monedas?.find(m => m.id_moneda === NuevoMetodo.id_moneda) || NuevoMetodo.moneda;
+    const NuevaTasa = Number(MonedaEncontrada?.tasa_cambio) || (MonedaEncontrada?.codigo === 'VES' ? Number(props.tasaVes) : 1.0) || 1.0;
+    const MonedaCambio = IdMonedaAnterior !== NuevoMetodo.id_moneda;
 
-    ActualizarMontoPago(pago);
+    pago.metodo = NuevoMetodo;
+    pago.id_metodo_pago = NuevoMetodo.id_metodo_pago;
+    pago.id_moneda = NuevoMetodo.id_moneda;
+    pago.moneda = MonedaEncontrada || NuevoMetodo.moneda;
+    pago.tasa_cambio = NuevaTasa;
+
+    if (MonedaCambio)
+    {
+        let MontoBase = Number(pago.monto_base);
+        if (!MontoBase || MontoBase <= 0)
+        {
+            const SaldoPendiente = saldoRestanteUsd.value > 0 ? saldoRestanteUsd.value : 0;
+            MontoBase = SaldoPendiente > 0 ? SaldoPendiente : Number(posStore.totalUsd);
+        }
+
+        if (pago.moneda?.es_principal)
+        {
+            pago.monto = Number(MontoBase.toFixed(2));
+            pago.monto_base = Number(MontoBase.toFixed(2));
+        }
+        else
+        {
+            pago.monto = Number((MontoBase * NuevaTasa).toFixed(2));
+            pago.monto_base = NuevaTasa > 0 ? Number((pago.monto / NuevaTasa).toFixed(2)) : MontoBase;
+        }
+    }
+
     VerificarSiUsaCashea();
 };
 
-const ActualizarMontoPago = (pago) => {
+const ActualizarMontoPago = (pago) =>
+{
     const monto = Number(pago.monto) || 0;
     const tasa = Number(pago.tasa_cambio) || 1.0;
 
-    if (pago.moneda?.es_principal) {
+    if (pago.moneda?.es_principal)
+    {
         pago.monto_base = Number(monto.toFixed(2));
-    } else {
+    }
+    else
+    {
         // Moneda secundaria (ej: VES): monto / tasa = USD
         pago.monto_base = tasa > 0 ? Number((monto / tasa).toFixed(2)) : monto;
     }
 };
 
-const VerificarSiUsaCashea = () => {
-    const tieneCashea = pagos.value.some(p => p.metodo?.tipo === 'FINANCIAMIENTO' || p.metodo?.codigo?.includes('CASHEA'));
-    datosCashea.value.activo = tieneCashea;
-    if (tieneCashea) {
+const VerificarSiUsaCashea = () =>
+{
+    const TieneCashea = pagos.value.some(p => p.metodo?.tipo === 'FINANCIAMIENTO' || p.metodo?.codigo?.includes('CASHEA'));
+    datosCashea.value.activo = TieneCashea;
+    if (TieneCashea)
+    {
         RecalcularCashea();
     }
 };
 
-const RecalcularCashea = () => {
+const RecalcularCashea = () =>
+{
     const total = posStore.totalUsd;
     const pct = Number(datosCashea.value.porcentaje_inicial) || 40.0;
     const inicial = Number(((total * pct) / 100).toFixed(2));

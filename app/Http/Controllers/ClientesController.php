@@ -43,16 +43,29 @@ class ClientesController extends Controller
         ]);
     }
 
-    public function Store(GuardarClienteRequest $request): RedirectResponse
+    public function Store(GuardarClienteRequest $request): RedirectResponse|JsonResponse
     {
         try
         {
             $cliente = $this->customerCreditService->GuardarCliente($request->validated());
 
+            if ($request->wantsJson())
+            {
+                return response()->json([
+                    'mensaje' => "Cliente '{$cliente->nombre}' registrado exitosamente.",
+                    'cliente' => $cliente,
+                ], 201);
+            }
+
             return back()->with('success', "Cliente '{$cliente->nombre}' registrado exitosamente.");
         }
         catch (Exception $e)
         {
+            if ($request->wantsJson())
+            {
+                return response()->json(['error' => $e->getMessage()], 422);
+            }
+
             return back()->withErrors(['error' => $e->getMessage()]);
         }
     }
@@ -71,13 +84,26 @@ class ClientesController extends Controller
         }
     }
 
-    public function Abonar(AbonarCreditoRequest $request, int $id_cliente): RedirectResponse
+    public function Abonar(AbonarCreditoRequest $request, int $id_cliente): RedirectResponse|JsonResponse
     {
         $IdUsuario = Auth::id() ?? 1;
 
         try
         {
             $abono = $this->customerCreditService->AbonarCredito($id_cliente, $request->validated(), $IdUsuario);
+
+            if ($request->wantsJson())
+            {
+                return response()->json([
+                    'mensaje' => sprintf(
+                        "Abono de $%.2f registrado con comprobante %s. Nuevo saldo: $%.2f",
+                        $abono['monto_abonado'],
+                        $abono['comprobante_abono'],
+                        $abono['nuevo_saldo']
+                    ),
+                    'abono' => $abono,
+                ], 200);
+            }
 
             return back()->with(
                 'success',
@@ -91,6 +117,11 @@ class ClientesController extends Controller
         }
         catch (Exception $e)
         {
+            if ($request->wantsJson())
+            {
+                return response()->json(['error' => $e->getMessage()], 422);
+            }
+
             return back()->withErrors(['error' => $e->getMessage()]);
         }
     }

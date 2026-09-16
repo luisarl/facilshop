@@ -181,4 +181,51 @@ class ClientesTest extends TestCase
         ]);
         $this->assertEquals(350.00, $response->json('credito_disponible'));
     }
+
+    public function test_se_puede_crear_cliente_via_json(): void
+    {
+        $payload = [
+            'identificacion' => 'V-88776655',
+            'nombre' => 'Pedro Castillo',
+            'telefono' => '04245554433',
+            'email' => 'pedro@ejemplo.com',
+            'limite_credito' => 200.00,
+        ];
+
+        $response = $this->actingAs($this->usuario)->postJson('/clientes', $payload);
+
+        $response->assertStatus(201);
+        $response->assertJsonStructure(['mensaje', 'cliente']);
+        $this->assertEquals('Pedro Castillo', $response->json('cliente.nombre'));
+        $this->assertDatabaseHas('clientes', ['identificacion' => 'V-88776655']);
+    }
+
+    public function test_se_puede_abonar_a_deuda_via_json(): void
+    {
+        CajaTurnosModel::create([
+            'id_usuario' => $this->usuario->id,
+            'fecha_apertura' => now(),
+            'monto_inicial' => 100.00,
+            'estado' => 'ABIERTA',
+        ]);
+
+        $payload = [
+            'monto' => 50.00,
+            'monto_base' => 50.00,
+            'id_metodo_pago' => $this->metodoEfectivoUsd->id_metodo_pago,
+            'id_moneda' => $this->monedaUsd->id_moneda,
+            'tasa_cambio' => 1.0000,
+            'referencia' => 'ABN-REF-100',
+        ];
+
+        $response = $this->actingAs($this->usuario)
+            ->postJson("/clientes/{$this->cliente->id_cliente}/abonar", $payload);
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure(['mensaje', 'abono']);
+        $this->assertEquals(50.00, $response->json('abono.monto_abonado'));
+        $this->assertEquals(100.00, $response->json('abono.nuevo_saldo'));
+        $this->cliente->refresh();
+        $this->assertEquals(100.00, (float) $this->cliente->saldo_pendiente);
+    }
 }
