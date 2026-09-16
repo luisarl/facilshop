@@ -16,14 +16,16 @@ const filtroForm = reactive({
     bajo_stock: props.filtros?.bajo_stock || false,
 });
 
-const Filtrar = () => {
+const Filtrar = () =>
+{
     router.get(route('inventario.productos.index'), filtroForm, {
         preserveState: true,
         replace: true,
     });
 };
 
-const LimpiarFiltros = () => {
+const LimpiarFiltros = () =>
+{
     filtroForm.buscar = '';
     filtroForm.id_categoria = '';
     filtroForm.id_marca = '';
@@ -35,6 +37,9 @@ const LimpiarFiltros = () => {
 const modalAbierto = ref(false);
 const editando = ref(false);
 const idProductoEditando = ref(null);
+const ImagenVisualizador = ref(null);
+const ImagenesExistentes = ref([]);
+const NuevasImagenes = ref([]);
 
 const form = useForm({
     sku: '',
@@ -53,26 +58,147 @@ const form = useForm({
     stock_actual: 0,
     stock_minimo: 5,
     activo: true,
+    imagen_principal: null,
+    imagenes: [],
+    imagenes_eliminar: [],
 });
 
-const AbrirModalNuevo = () => {
+const ResolverUrlImagen = (ruta) =>
+{
+    if (!ruta)
+    {
+        return '';
+    }
+
+    if (ruta.startsWith('blob:') || ruta.startsWith('data:'))
+    {
+        return ruta;
+    }
+
+    let subfolder = '';
+    if (typeof window !== 'undefined' && window.location?.pathname)
+    {
+        const match = window.location.pathname.match(/^(\/[^\/]+\/public)/i);
+        if (match)
+        {
+            subfolder = match[1];
+        }
+    }
+
+    if (ruta.startsWith('http://') || ruta.startsWith('https://'))
+    {
+        try
+        {
+            const parsed = new URL(ruta);
+            if (subfolder && parsed.pathname.startsWith('/storage') && !parsed.pathname.startsWith(subfolder))
+            {
+                parsed.pathname = `${subfolder}${parsed.pathname}`;
+                return parsed.toString();
+            }
+        }
+        catch (e)
+        {
+            // Continuar con fallback
+        }
+        return ruta;
+    }
+
+    const cleanPath = ruta.startsWith('/') ? ruta : '/' + ruta;
+    if (subfolder && cleanPath.startsWith('/storage') && !cleanPath.startsWith(subfolder))
+    {
+        return `${subfolder}${cleanPath}`;
+    }
+
+    return cleanPath;
+};
+
+const AbrirVisorImagen = (ruta) =>
+{
+    ImagenVisualizador.value = ResolverUrlImagen(ruta);
+};
+
+const OnSeleccionarImagenes = (evento) =>
+{
+    const archivos = Array.from(evento.target.files || []);
+    for (const archivo of archivos)
+    {
+        if (archivo.type.startsWith('image/'))
+        {
+            const urlPreview = URL.createObjectURL(archivo);
+            NuevasImagenes.value.push({
+                archivo: archivo,
+                urlPreview: urlPreview,
+            });
+        }
+    }
+    evento.target.value = '';
+};
+
+const EliminarImagenNueva = (index) =>
+{
+    const item = NuevasImagenes.value[index];
+    if (item && item.urlPreview)
+    {
+        URL.revokeObjectURL(item.urlPreview);
+    }
+    NuevasImagenes.value.splice(index, 1);
+};
+
+const EliminarImagenExistente = (idImagen) =>
+{
+    if (!form.imagenes_eliminar.includes(idImagen))
+    {
+        form.imagenes_eliminar.push(idImagen);
+    }
+    ImagenesExistentes.value = ImagenesExistentes.value.filter(
+        img => img.id_producto_imagen !== idImagen
+    );
+};
+
+const AbrirModalNuevo = () =>
+{
     editando.value = false;
     idProductoEditando.value = null;
+    ImagenesExistentes.value = [];
+    for (const item of NuevasImagenes.value)
+    {
+        if (item.urlPreview)
+        {
+            URL.revokeObjectURL(item.urlPreview);
+        }
+    }
+    NuevasImagenes.value = [];
     form.reset();
+    form.clearErrors();
     form.id_unidad = props.catalogos?.unidades?.[0]?.id_unidad || '';
     form.equivalencia_unidad = 1.0;
     form.equivalencia_unidad_secundaria = 1.0;
     form.stock_minimo = 5;
     form.activo = true;
+    form.imagen_principal = null;
+    form.imagenes = [];
+    form.imagenes_eliminar = [];
     modalAbierto.value = true;
 };
 
-const AbrirModalEditar = (producto) => {
+const AbrirModalEditar = (producto) =>
+{
     editando.value = true;
     idProductoEditando.value = producto.id_producto;
-    form.sku = producto.sku;
+    for (const item of NuevasImagenes.value)
+    {
+        if (item.urlPreview)
+        {
+            URL.revokeObjectURL(item.urlPreview);
+        }
+    }
+    NuevasImagenes.value = [];
+    ImagenesExistentes.value = Array.isArray(producto.imagenes) ? [...producto.imagenes] : [];
+    form.reset();
+    form.clearErrors();
+    form.sku = producto.sku || '';
     form.codigo_barras = producto.codigo_barras || '';
-    form.nombre = producto.nombre;
+    form.nombre = producto.nombre || '';
     form.modelo = producto.modelo || '';
     form.descripcion = producto.descripcion || '';
     form.id_marca = producto.id_marca || '';
@@ -81,27 +207,58 @@ const AbrirModalEditar = (producto) => {
     form.id_unidad_secundaria = producto.id_unidad_secundaria || '';
     form.equivalencia_unidad = Number(producto.equivalencia_unidad) || 1.0;
     form.equivalencia_unidad_secundaria = Number(producto.equivalencia_unidad_secundaria) || 1.0;
-    form.precio_costo = Number(producto.precio_costo);
-    form.precio_venta = Number(producto.precio_venta);
-    form.stock_actual = Number(producto.stock_actual);
-    form.stock_minimo = Number(producto.stock_minimo);
+    form.precio_costo = Number(producto.precio_costo) || 0;
+    form.precio_venta = Number(producto.precio_venta) || 0;
+    form.stock_actual = Number(producto.stock_actual) || 0;
+    form.stock_minimo = Number(producto.stock_minimo) || 0;
     form.activo = Boolean(producto.activo);
+    form.imagen_principal = producto.imagen_principal || null;
+    form.imagenes = [];
+    form.imagenes_eliminar = [];
     modalAbierto.value = true;
 };
 
-const CerrarModal = () => {
+const CerrarModal = () =>
+{
     modalAbierto.value = false;
+    for (const item of NuevasImagenes.value)
+    {
+        if (item.urlPreview)
+        {
+            URL.revokeObjectURL(item.urlPreview);
+        }
+    }
+    NuevasImagenes.value = [];
+    ImagenesExistentes.value = [];
     form.reset();
+    form.clearErrors();
 };
 
-const GuardarProducto = () => {
-    if (editando.value) {
-        form.put(route('inventario.productos.update', idProductoEditando.value), {
-            onSuccess: () => CerrarModal(),
+const GuardarProducto = () =>
+{
+    form.imagenes = NuevasImagenes.value.map(item => item.archivo);
+
+    if (editando.value)
+    {
+        form.transform((data) => ({
+            ...data,
+            _method: 'put',
+        })).post(route('inventario.productos.update', idProductoEditando.value), {
+            forceFormData: true,
+            onSuccess: () =>
+            {
+                CerrarModal();
+            },
         });
-    } else {
+    }
+    else
+    {
         form.post(route('inventario.productos.store'), {
-            onSuccess: () => CerrarModal(),
+            forceFormData: true,
+            onSuccess: () =>
+            {
+                CerrarModal();
+            },
         });
     }
 };
@@ -112,18 +269,24 @@ const productoSeleccionado = ref(null);
 const movimientos = ref([]);
 const cargandoMovimientos = ref(false);
 
-const VerMovimientos = async (producto) => {
+const VerMovimientos = async (producto) =>
+{
     productoSeleccionado.value = producto;
     modalMovimientosAbierto.value = true;
     cargandoMovimientos.value = true;
-    try {
+    try
+    {
         const respuesta = await fetch(route('inventario.productos.movimientos', producto.id_producto));
         const datos = await respuesta.json();
         movimientos.value = datos.data || [];
-    } catch (error) {
+    }
+    catch (error)
+    {
         console.error(error);
         movimientos.value = [];
-    } finally {
+    }
+    finally
+    {
         cargandoMovimientos.value = false;
     }
 };
@@ -288,18 +451,31 @@ const VerMovimientos = async (producto) => {
                                 >
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-3">
-                                            <div class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center font-bold text-gray-600 dark:text-gray-300 shrink-0">
-                                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <div
+                                                class="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center font-bold text-gray-600 dark:text-gray-300 shrink-0 overflow-hidden border border-gray-200 dark:border-gray-600/60 shadow-xs cursor-pointer group/img relative"
+                                                @click="producto.imagen_principal ? AbrirVisorImagen(producto.imagen_principal) : (producto.imagenes?.[0]?.ruta_imagen ? AbrirVisorImagen(producto.imagenes[0].ruta_imagen) : null)"
+                                                :title="producto.imagen_principal || producto.imagenes?.[0]?.ruta_imagen ? 'Ver imagen ampliada' : 'Sin imagen'"
+                                            >
+                                                <img
+                                                    v-if="producto.imagen_principal || producto.imagenes?.[0]?.ruta_imagen"
+                                                    :src="ResolverUrlImagen(producto.imagen_principal || producto.imagenes[0].ruta_imagen)"
+                                                    :alt="producto.nombre"
+                                                    class="w-full h-full object-cover group-hover/img:scale-110 transition duration-200"
+                                                />
+                                                <svg v-else class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
                                                 </svg>
                                             </div>
-                                            <div>
+                                            <div class="min-w-0">
                                                 <div class="font-bold text-gray-900 dark:text-gray-100 text-sm">
                                                     {{ producto.nombre }}
                                                 </div>
                                                 <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 mt-0.5">
                                                     <span class="font-mono bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">SKU: {{ producto.sku }}</span>
                                                     <span v-if="producto.codigo_barras" class="font-mono text-gray-400">| EAN: {{ producto.codigo_barras }}</span>
+                                                </div>
+                                                <div v-if="producto.descripcion" class="text-[11px] text-gray-400 dark:text-gray-500 line-clamp-1 mt-0.5 max-w-xs" :title="producto.descripcion">
+                                                    {{ producto.descripcion }}
                                                 </div>
                                             </div>
                                         </div>
@@ -405,8 +581,8 @@ const VerMovimientos = async (producto) => {
 
         <!-- Modal Crear / Editar -->
         <div v-if="modalAbierto" class="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="bg-white dark:bg-gray-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-gray-100 dark:border-gray-700">
-                <div class="flex justify-between items-center pb-4 border-b border-gray-100 dark:border-gray-700">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl max-w-3xl w-full p-6 shadow-2xl border border-gray-100 dark:border-gray-700 max-h-[92vh] flex flex-col">
+                <div class="flex justify-between items-center pb-4 border-b border-gray-100 dark:border-gray-700 shrink-0">
                     <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">
                         {{ editando ? 'Editar Producto' : 'Registrar Nuevo Producto' }}
                     </h3>
@@ -415,7 +591,7 @@ const VerMovimientos = async (producto) => {
                     </button>
                 </div>
 
-                <form @submit.prevent="GuardarProducto" class="mt-5 space-y-4">
+                <form @submit.prevent="GuardarProducto" class="mt-5 space-y-4 overflow-y-auto pr-1">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Código SKU *</label>
@@ -449,6 +625,17 @@ const VerMovimientos = async (producto) => {
                             class="w-full py-2 px-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm"
                         />
                         <p v-if="form.errors.nombre" class="text-xs text-rose-500 mt-1">{{ form.errors.nombre }}</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Descripción del Producto (Opcional)</label>
+                        <textarea
+                            v-model="form.descripcion"
+                            rows="3"
+                            placeholder="Detalles, especificaciones técnicas, características del producto..."
+                            class="w-full py-2 px-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                        ></textarea>
+                        <p v-if="form.errors.descripcion" class="text-xs text-rose-500 mt-1">{{ form.errors.descripcion }}</p>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -486,6 +673,110 @@ const VerMovimientos = async (producto) => {
                                 class="w-full py-2 px-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm"
                             />
                         </div>
+                    </div>
+
+                    <!-- Sección de Fotografías del Producto -->
+                    <div class="p-4 bg-gray-50 dark:bg-gray-750 rounded-2xl border border-gray-200 dark:border-gray-700 space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                                <h4 class="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    Fotografías del Producto
+                                </h4>
+                                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                                    JPG, PNG, WEBP (hasta 5MB). La primera foto se guardará como portada.
+                                </p>
+                            </div>
+                            <label class="cursor-pointer inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 rounded-xl text-xs font-semibold transition border border-indigo-200 dark:border-indigo-800 shrink-0">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                <span>Agregar Fotos</span>
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    class="hidden"
+                                    @change="OnSeleccionarImagenes"
+                                />
+                            </label>
+                        </div>
+
+                        <!-- Previsualización de imágenes -->
+                        <div v-if="ImagenesExistentes.length > 0 || NuevasImagenes.length > 0" class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                            <!-- Imágenes Existentes -->
+                            <div
+                                v-for="(img, idx) in ImagenesExistentes"
+                                :key="'existente-' + img.id_producto_imagen"
+                                class="relative group rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 aspect-square flex items-center justify-center shadow-xs"
+                            >
+                                <img
+                                    :src="ResolverUrlImagen(img.ruta_imagen)"
+                                    alt="Producto"
+                                    class="w-full h-full object-cover cursor-pointer transition group-hover:scale-105"
+                                    @click="AbrirVisorImagen(img.ruta_imagen)"
+                                />
+                                <span
+                                    v-if="img.es_principal || (idx === 0 && NuevasImagenes.length === 0)"
+                                    class="absolute top-1.5 left-1.5 bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm"
+                                >
+                                    Principal
+                                </span>
+                                <button
+                                    type="button"
+                                    @click="EliminarImagenExistente(img.id_producto_imagen)"
+                                    class="absolute top-1.5 right-1.5 bg-rose-600 hover:bg-rose-700 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs opacity-90 hover:opacity-100 shadow transition"
+                                    title="Eliminar imagen"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+
+                            <!-- Nuevas Imágenes Seleccionadas -->
+                            <div
+                                v-for="(item, idx) in NuevasImagenes"
+                                :key="'nueva-' + idx"
+                                class="relative group rounded-xl overflow-hidden border-2 border-dashed border-indigo-400 dark:border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/20 aspect-square flex items-center justify-center shadow-xs"
+                            >
+                                <img
+                                    :src="item.urlPreview"
+                                    alt="Nueva imagen"
+                                    class="w-full h-full object-cover cursor-pointer transition group-hover:scale-105"
+                                    @click="AbrirVisorImagen(item.urlPreview)"
+                                />
+                                <span
+                                    v-if="ImagenesExistentes.length === 0 && idx === 0"
+                                    class="absolute top-1.5 left-1.5 bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm"
+                                >
+                                    Nueva Principal
+                                </span>
+                                <button
+                                    type="button"
+                                    @click="EliminarImagenNueva(idx)"
+                                    class="absolute top-1.5 right-1.5 bg-rose-600 hover:bg-rose-700 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs opacity-90 hover:opacity-100 shadow transition"
+                                    title="Quitar foto"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        </div>
+
+                        <div
+                            v-else
+                            class="py-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 hover:border-indigo-400 transition cursor-pointer"
+                            @click="$el.querySelector('input[type=file]')?.click()"
+                        >
+                            <svg class="w-8 h-8 mb-1 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span class="text-xs font-medium">Haga clic o use el botón de arriba para subir imágenes</span>
+                        </div>
+
+                        <p v-if="form.errors['imagenes.0'] || form.errors.imagenes || form.errors.imagen_principal" class="text-xs text-rose-500">
+                            {{ form.errors['imagenes.0'] || form.errors.imagenes || form.errors.imagen_principal }}
+                        </p>
                     </div>
 
                     <!-- Unidades y Equivalencias -->
@@ -692,6 +983,28 @@ const VerMovimientos = async (producto) => {
                         Cerrar
                     </button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Modal Visor de Imagen Ampliada -->
+        <div
+            v-if="ImagenVisualizador"
+            class="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
+            style="z-index: 100;"
+            @click="ImagenVisualizador = null"
+        >
+            <div class="relative max-w-3xl max-h-[85vh] p-2 bg-white dark:bg-gray-900 rounded-3xl shadow-2xl overflow-hidden" @click.stop>
+                <button
+                    @click="ImagenVisualizador = null"
+                    class="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition font-bold"
+                >
+                    ✕
+                </button>
+                <img
+                    :src="ResolverUrlImagen(ImagenVisualizador)"
+                    alt="Vista ampliada"
+                    class="max-w-full max-h-[80vh] rounded-2xl object-contain"
+                />
             </div>
         </div>
 

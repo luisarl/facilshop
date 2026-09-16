@@ -107,14 +107,134 @@ class InventarioService
     {
         return DB::transaction(function () use ($datos, $IdProducto)
         {
+            $ArchivosImagenes = $datos['imagenes'] ?? [];
+            $ImagenPrincipal = $datos['imagen_principal'] ?? null;
+            $ImagenesEliminar = $datos['imagenes_eliminar'] ?? [];
+
+            $DatosProducto = $datos;
+            unset($DatosProducto['imagenes'], $DatosProducto['imagenes_eliminar']);
+
+            if ($ImagenPrincipal instanceof \Illuminate\Http\UploadedFile)
+            {
+                unset($DatosProducto['imagen_principal']);
+            }
+
             if ($IdProducto)
             {
                 $producto = ProductosModel::findOrFail($IdProducto);
-                $producto->update($datos);
+                $producto->update($DatosProducto);
             }
             else
             {
-                $producto = ProductosModel::create($datos);
+                $producto = ProductosModel::create($DatosProducto);
+            }
+
+            if (!empty($ImagenesEliminar) && is_array($ImagenesEliminar))
+            {
+                foreach ($ImagenesEliminar as $idImagen)
+                {
+                    $img = ProductosImagenesModel::where('id_producto', $producto->id_producto)
+                        ->where('id_producto_imagen', $idImagen)
+                        ->first();
+
+                    if ($img)
+                    {
+                        $rawRuta = $img->getRawOriginal('ruta_imagen') ?? $img->ruta_imagen;
+                        $PathRelativa = str_replace(['/storage/', 'storage/'], '', $rawRuta);
+                        Storage::disk('public')->delete($PathRelativa);
+                        $img->delete();
+                    }
+                }
+            }
+
+            if ($ImagenPrincipal instanceof \Illuminate\Http\UploadedFile)
+            {
+                $path = $ImagenPrincipal->store('productos', 'public');
+                $ruta = '/storage/' . $path;
+
+                ProductosImagenesModel::where('id_producto', $producto->id_producto)
+                    ->update(['es_principal' => false]);
+
+                ProductosImagenesModel::create([
+                    'id_producto' => $producto->id_producto,
+                    'ruta_imagen' => $ruta,
+                    'es_principal' => true,
+                    'orden' => 0,
+                    'activo' => true,
+                ]);
+
+                $producto->imagen_principal = $ruta;
+                $producto->save();
+            }
+
+            if (!empty($ArchivosImagenes) && is_array($ArchivosImagenes))
+            {
+                $maxOrden = ProductosImagenesModel::where('id_producto', $producto->id_producto)->max('orden') ?? 0;
+
+                foreach ($ArchivosImagenes as $archivo)
+                {
+                    if ($archivo instanceof \Illuminate\Http\UploadedFile)
+                    {
+                        $maxOrden++;
+                        $path = $archivo->store('productos', 'public');
+                        $ruta = '/storage/' . $path;
+                        $esPrincipal = empty($producto->imagen_principal);
+
+                        ProductosImagenesModel::create([
+                            'id_producto' => $producto->id_producto,
+                            'ruta_imagen' => $ruta,
+                            'es_principal' => $esPrincipal,
+                            'orden' => $maxOrden,
+                            'activo' => true,
+                        ]);
+
+                        if ($esPrincipal)
+                        {
+                            $producto->imagen_principal = $ruta;
+                            $producto->save();
+                        }
+                    }
+                }
+            }
+
+            if (empty($producto->imagen_principal))
+            {
+                $primera = ProductosImagenesModel::where('id_producto', $producto->id_producto)
+                    ->orderBy('es_principal', 'desc')
+                    ->orderBy('orden', 'asc')
+                    ->first();
+
+                if ($primera)
+                {
+                    $primera->update(['es_principal' => true]);
+                    $producto->imagen_principal = $primera->getRawOriginal('ruta_imagen') ?? $primera->ruta_imagen;
+                    $producto->save();
+                }
+            }
+            else
+            {
+                $rawPrincipal = $producto->getRawOriginal('imagen_principal') ?? $producto->imagen_principal;
+                $existe = ProductosImagenesModel::where('id_producto', $producto->id_producto)
+                    ->where('ruta_imagen', $rawPrincipal)
+                    ->exists();
+
+                if (!$existe)
+                {
+                    $primera = ProductosImagenesModel::where('id_producto', $producto->id_producto)
+                        ->orderBy('orden', 'asc')
+                        ->first();
+
+                    if ($primera)
+                    {
+                        $primera->update(['es_principal' => true]);
+                        $producto->imagen_principal = $primera->getRawOriginal('ruta_imagen') ?? $primera->ruta_imagen;
+                    }
+                    else
+                    {
+                        $producto->imagen_principal = null;
+                    }
+                    $producto->save();
+                }
             }
 
             return $producto->fresh(['Marca', 'Categoria', 'Unidad', 'UnidadSecundaria', 'Imagenes']);

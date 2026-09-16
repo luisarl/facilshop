@@ -42,6 +42,15 @@ class ProductosController extends Controller
     public function Store(GuardarProductoRequest $request): RedirectResponse
     {
         $datos = $request->validated();
+        if ($request->hasFile('imagen_principal'))
+        {
+            $datos['imagen_principal'] = $request->file('imagen_principal');
+        }
+        if ($request->hasFile('imagenes'))
+        {
+            $datos['imagenes'] = $request->file('imagenes');
+        }
+
         $this->inventarioService->GuardarProducto($datos);
 
         return redirect()->route('inventario.productos.index')->with('success', 'Producto registrado exitosamente.');
@@ -50,6 +59,15 @@ class ProductosController extends Controller
     public function Update(GuardarProductoRequest $request, int $id_producto): RedirectResponse
     {
         $datos = $request->validated();
+        if ($request->hasFile('imagen_principal'))
+        {
+            $datos['imagen_principal'] = $request->file('imagen_principal');
+        }
+        if ($request->hasFile('imagenes'))
+        {
+            $datos['imagenes'] = $request->file('imagenes');
+        }
+
         $this->inventarioService->GuardarProducto($datos, $id_producto);
 
         return redirect()->route('inventario.productos.index')->with('success', 'Producto actualizado exitosamente.');

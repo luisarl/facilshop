@@ -99,4 +99,19 @@ class ProductosModel extends Model
     {
         return $this->stock_actual <= $this->stock_minimo;
     }
+
+    public function getImagenPrincipalAttribute(?string $value): ?string
+    {
+        if (empty($value))
+        {
+            return null;
+        }
+
+        if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://') || str_starts_with($value, 'blob:') || str_starts_with($value, 'data:'))
+        {
+            return $value;
+        }
+
+        return asset(ltrim($value, '/'));
+    }
 }

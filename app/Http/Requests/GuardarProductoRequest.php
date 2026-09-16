@@ -12,9 +12,19 @@ class GuardarProductoRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('codigo_barras') && trim((string) $this->input('codigo_barras')) === '')
+        {
+            $this->merge([
+                'codigo_barras' => null,
+            ]);
+        }
+    }
+
     public function rules(): array
     {
-        $IdProducto = $this->route('producto') ?? $this->input('id_producto');
+        $IdProducto = $this->route('id_producto') ?? $this->route('producto') ?? $this->input('id_producto');
 
         return [
             'sku' => [
@@ -42,7 +52,13 @@ class GuardarProductoRequest extends FormRequest
             'precio_venta' => ['required', 'numeric', 'min:0'],
             'stock_actual' => ['nullable', 'integer', 'min:0'],
             'stock_minimo' => ['required', 'integer', 'min:0'],
-            'imagen_principal' => ['nullable', 'string', 'max:255'],
+            'imagen_principal' => $this->hasFile('imagen_principal')
+                ? ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:5120']
+                : ['nullable', 'string', 'max:255'],
+            'imagenes' => ['nullable', 'array'],
+            'imagenes.*' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:5120'],
+            'imagenes_eliminar' => ['nullable', 'array'],
+            'imagenes_eliminar.*' => ['integer'],
             'fecha_vencimiento' => ['nullable', 'date'],
             'activo' => ['boolean'],
         ];
@@ -58,6 +74,8 @@ class GuardarProductoRequest extends FormRequest
             'id_unidad.required' => 'La unidad de medida principal es obligatoria.',
             'precio_costo.required' => 'El precio de costo es obligatorio.',
             'precio_venta.required' => 'El precio de venta es obligatorio.',
+            'imagenes.*.image' => 'El archivo seleccionado debe ser una imagen válida.',
+            'imagenes.*.max' => 'Cada imagen no debe superar los 5MB.',
         ];
     }
 }

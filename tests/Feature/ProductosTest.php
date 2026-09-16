@@ -142,4 +142,99 @@ class ProductosTest extends TestCase
         $response->assertOk();
         $response->assertJsonPath('sku', 'BAR-001');
     }
+
+    public function test_se_puede_actualizar_producto_manteniendo_sku_y_codigo_barras_y_descripcion(): void
+    {
+        $producto = ProductosModel::create([
+            'sku' => 'EDIT-SKU-001',
+            'codigo_barras' => '1234567890123',
+            'nombre' => 'Producto Original',
+            'descripcion' => 'Descripción inicial',
+            'id_marca' => $this->marca->id_marca,
+            'id_categoria' => $this->categoria->id_categoria,
+            'id_unidad' => $this->unidad->id_unidad,
+            'equivalencia_unidad' => 1.0000,
+            'precio_costo' => 50.0000,
+            'precio_venta' => 80.0000,
+            'stock_actual' => 10,
+            'stock_minimo' => 2,
+            'activo' => true,
+        ]);
+
+        $payload = [
+            'sku' => 'EDIT-SKU-001',
+            'codigo_barras' => '1234567890123',
+            'nombre' => 'Producto Modificado',
+            'descripcion' => 'Nueva descripción detallada del producto',
+            'id_marca' => $this->marca->id_marca,
+            'id_categoria' => $this->categoria->id_categoria,
+            'id_unidad' => $this->unidad->id_unidad,
+            'equivalencia_unidad' => 1.0000,
+            'precio_costo' => 55.0000,
+            'precio_venta' => 90.0000,
+            'stock_actual' => 10,
+            'stock_minimo' => 2,
+            'activo' => true,
+        ];
+
+        $response = $this->actingAs($this->usuario)->put(
+            route('inventario.productos.update', $producto->id_producto),
+            $payload
+        );
+
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect(route('inventario.productos.index'));
+
+        $this->assertDatabaseHas('productos', [
+            'id_producto' => $producto->id_producto,
+            'sku' => 'EDIT-SKU-001',
+            'codigo_barras' => '1234567890123',
+            'nombre' => 'Producto Modificado',
+            'descripcion' => 'Nueva descripción detallada del producto',
+            'precio_venta' => 90.0000,
+        ]);
+    }
+
+    public function test_se_puede_crear_y_actualizar_producto_con_imagenes(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $archivoFoto1 = \Illuminate\Http\UploadedFile::fake()->image('foto1.jpg', 600, 600);
+        $archivoFoto2 = \Illuminate\Http\UploadedFile::fake()->image('foto2.png', 800, 800);
+
+        $payload = [
+            'sku' => 'PROD-IMG-001',
+            'codigo_barras' => '9998887776665',
+            'nombre' => 'Producto con Imágenes',
+            'descripcion' => 'Tiene múltiples imágenes',
+            'id_marca' => $this->marca->id_marca,
+            'id_categoria' => $this->categoria->id_categoria,
+            'id_unidad' => $this->unidad->id_unidad,
+            'equivalencia_unidad' => 1.0000,
+            'precio_costo' => 10.00,
+            'precio_venta' => 25.00,
+            'stock_actual' => 5,
+            'stock_minimo' => 1,
+            'activo' => true,
+            'imagen_principal' => $archivoFoto1,
+            'imagenes' => [$archivoFoto2],
+        ];
+
+        $response = $this->actingAs($this->usuario)->post(
+            route('inventario.productos.store'),
+            $payload
+        );
+
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect(route('inventario.productos.index'));
+
+        $producto = ProductosModel::where('sku', 'PROD-IMG-001')->first();
+        $this->assertNotNull($producto);
+        $this->assertNotNull($producto->imagen_principal);
+        $this->assertDatabaseHas('productos_imagenes', [
+            'id_producto' => $producto->id_producto,
+            'es_principal' => true,
+        ]);
+        $this->assertEquals(2, $producto->Imagenes()->count());
+    }
 }

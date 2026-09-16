@@ -36,4 +36,19 @@ class ProductosImagenesModel extends Model
     {
         return $this->belongsTo(ProductosModel::class, 'id_producto', 'id_producto');
     }
+
+    public function getRutaImagenAttribute(?string $value): ?string
+    {
+        if (empty($value))
+        {
+            return null;
+        }
+
+        if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://') || str_starts_with($value, 'blob:') || str_starts_with($value, 'data:'))
+        {
+            return $value;
+        }
+
+        return asset(ltrim($value, '/'));
+    }
 }
