@@ -38,6 +38,30 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
             ],
+            'global_info' => [
+                'tasa_bcv' => function (): float
+                {
+                    try
+                    {
+                        return (float) (\App\Models\MonedasModel::where('codigo', 'VES')->value('tasa_cambio') ?? 1.0);
+                    }
+                    catch (\Throwable)
+                    {
+                        return 1.0;
+                    }
+                },
+                'caja_activa' => function () use ($request): bool
+                {
+                    try
+                    {
+                        return $request->user() ? \App\Models\CajaTurnosModel::where('id_usuario', $request->user()->id_usuario)->where('estado', 'ABIERTA')->exists() : false;
+                    }
+                    catch (\Throwable)
+                    {
+                        return false;
+                    }
+                },
+            ],
         ];
     }
 }
