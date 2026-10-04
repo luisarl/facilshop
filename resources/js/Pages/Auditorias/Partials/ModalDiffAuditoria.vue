@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
+import { FormatearFechaHora } from '@/Utils/FechaHora';
 
 const props = defineProps({
     auditoria: Object,
@@ -144,7 +145,7 @@ const CopiarSnapshot = async () =>
                 <div>
                     <span class="text-gray-400 uppercase text-[10px] font-bold tracking-wider">Fecha y Hora</span>
                     <div class="font-mono text-gray-800 dark:text-gray-200">
-                        {{ new Date(auditoria.created_at).toLocaleString() }}
+                        {{ FormatearFechaHora(auditoria.created_at, true) }}
                     </div>
                 </div>
                 <div>

@@ -2,6 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
+import { FormatearFechaHora } from '@/Utils/FechaHora';
 
 const props = defineProps({
     turnoActivo: {
@@ -171,7 +172,7 @@ const calculoDiferencia = computed(() => {
                                     Turno #{{ turnoActivo.id_caja_turno }} — Caja Abierta
                                 </h3>
                                 <p class="text-xs text-gray-600 dark:text-gray-300">
-                                    Iniciado el {{ new Date(turnoActivo.fecha_apertura).toLocaleString('es-VE') }} por {{ $page.props.auth.user.name }}
+                                    Iniciado el {{ FormatearFechaHora(turnoActivo.fecha_apertura) }} por {{ $page.props.auth.user.name }}
                                 </p>
                             </div>
                         </div>
@@ -263,10 +264,10 @@ const calculoDiferencia = computed(() => {
                                         {{ item.usuario?.nombre || '—' }}
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-4 text-xs font-mono">
-                                        {{ new Date(item.fecha_apertura).toLocaleString('es-VE') }}
+                                        {{ FormatearFechaHora(item.fecha_apertura) }}
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-4 text-xs font-mono">
-                                        {{ item.fecha_cierre ? new Date(item.fecha_cierre).toLocaleString('es-VE') : 'En curso' }}
+                                        {{ item.fecha_cierre ? FormatearFechaHora(item.fecha_cierre) : 'En curso' }}
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-4 font-mono text-xs">
                                         ${{ Number(item.monto_inicial).toFixed(2) }}

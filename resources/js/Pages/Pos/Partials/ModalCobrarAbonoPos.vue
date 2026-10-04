@@ -25,6 +25,22 @@ const clientesDeudores = computed(() =>
     return (props.clientes || []).filter(c => Number(c.saldo_pendiente) > 0);
 });
 
+const OpcionesClientesAbono = computed(() =>
+{
+    return (props.clientes || []).map((c) => ({
+        value: c.id_cliente,
+        label: `${c.nombre} (${c.identificacion}) — Deuda: $${Number(c.saldo_pendiente).toFixed(2)}`
+    }));
+});
+
+const OpcionesMetodosAbonoPos = computed(() =>
+{
+    return (props.metodosPago || []).map((m) => ({
+        value: m.id_metodo_pago,
+        label: `${m.nombre} (${m.moneda?.codigo || ''})`
+    }));
+});
+
 // Formulario de Pago
 const idMetodoSeleccionado = ref(null);
 const metodoSeleccionado = ref(null);
@@ -291,15 +307,14 @@ const ProcesarAbono = async () =>
                 <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                     Seleccionar Cliente
                 </label>
-                <select
-                    :value="idClienteActivo"
-                    @change="CambiarCliente(Number($event.target.value))"
-                    class="w-full py-2 px-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-500"
-                >
-                    <option v-for="c in clientes" :key="c.id_cliente" :value="c.id_cliente">
-                        {{ c.nombre }} ({{ c.identificacion }}) — Deuda: ${{ Number(c.saldo_pendiente).toFixed(2) }}
-                    </option>
-                </select>
+                <SelectFiltro
+                    :modelValue="idClienteActivo"
+                    :options="OpcionesClientesAbono"
+                    :permitirLimpiar="false"
+                    placeholder="Seleccionar Cliente..."
+                    searchPlaceholder="Filtrar por nombre o cédula..."
+                    @change="(val) => CambiarCliente(Number(val))"
+                />
             </div>
 
             <!-- TARJETA DE ESTADO DE CUENTA ACTUAL -->
@@ -352,15 +367,14 @@ const ProcesarAbono = async () =>
                         <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                             Forma de Pago
                         </label>
-                        <select
-                            :value="idMetodoSeleccionado"
-                            @change="CambiarMetodoPago($event.target.value)"
-                            class="w-full py-2 px-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-500"
-                        >
-                            <option v-for="m in metodosPago" :key="m.id_metodo_pago" :value="m.id_metodo_pago">
-                                {{ m.nombre }} ({{ m.moneda?.codigo }})
-                            </option>
-                        </select>
+                        <SelectFiltro
+                            :modelValue="idMetodoSeleccionado"
+                            :options="OpcionesMetodosAbonoPos"
+                            :permitirLimpiar="false"
+                            placeholder="Seleccionar Forma de Pago..."
+                            searchPlaceholder="Filtrar forma de pago..."
+                            @change="(val) => CambiarMetodoPago(Number(val))"
+                        />
                     </div>
 
                     <div>

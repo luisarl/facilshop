@@ -2,6 +2,7 @@
 import { reactive } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { FormatearFechaHora } from '@/Utils/FechaHora';
 
 const props = defineProps({
     ajustes: Object,
@@ -10,6 +11,11 @@ const props = defineProps({
     tipos_salida: Array,
 });
 
+const OpcionesNaturaleza = [
+    { value: 'ENTRADA', label: 'ENTRADA (Incremento)' },
+    { value: 'SALIDA', label: 'SALIDA (Deducción)' }
+];
+
 const filtroForm = reactive({
     buscar: props.filtros?.buscar || '',
     naturaleza: props.filtros?.naturaleza || '',
@@ -17,7 +23,8 @@ const filtroForm = reactive({
     fecha_hasta: props.filtros?.fecha_hasta || '',
 });
 
-const Filtrar = () => {
+const Filtrar = () =>
+{
     router.get(route('inventario.ajustes.index'), filtroForm, {
         preserveState: true,
         replace: true,
@@ -89,14 +96,13 @@ const LimpiarFiltros = () => {
                             <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-1">
                                 Naturaleza
                             </label>
-                            <select
+                            <SelectFiltro
                                 v-model="filtroForm.naturaleza"
-                                class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm"
-                            >
-                                <option value="">Todas</option>
-                                <option value="ENTRADA">ENTRADA (Incremento)</option>
-                                <option value="SALIDA">SALIDA (Deducción)</option>
-                            </select>
+                                :options="OpcionesNaturaleza"
+                                placeholder="Todas"
+                                searchPlaceholder="Filtrar naturaleza..."
+                                @change="Filtrar"
+                            />
                         </div>
 
                         <div>
@@ -205,7 +211,7 @@ const LimpiarFiltros = () => {
                                             {{ ajuste.usuario?.nombre || 'Usuario' }}
                                         </div>
                                         <div class="text-xs text-gray-400 font-mono">
-                                            {{ new Date(ajuste.fecha_ajuste).toLocaleDateString() }} {{ new Date(ajuste.fecha_ajuste).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
+                                            {{ FormatearFechaHora(ajuste.fecha_ajuste) }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 text-center">

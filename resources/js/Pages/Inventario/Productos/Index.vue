@@ -2,11 +2,23 @@
 import { ref, reactive, computed } from 'vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { FormatearFechaHora } from '@/Utils/FechaHora';
 
 const props = defineProps({
     productos: Object,
     catalogos: Object,
     filtros: Object,
+});
+
+const OpcionesUnidades = computed(() =>
+{
+    return (props.catalogos?.unidades || []).map((u) =>
+    {
+        return {
+            value: u.id_unidad,
+            label: `${u.nombre} (${u.abreviatura})`
+        };
+    });
 });
 
 const filtroForm = reactive({
@@ -355,30 +367,30 @@ const VerMovimientos = async (producto) =>
                             <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-1">
                                 Categoría
                             </label>
-                            <select
+                            <SelectFiltro
                                 v-model="filtroForm.id_categoria"
-                                class="w-full py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-sm text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500"
-                            >
-                                <option value="">Todas las Categorías</option>
-                                <option v-for="cat in catalogos.categorias" :key="cat.id_categoria" :value="cat.id_categoria">
-                                    {{ cat.nombre }}
-                                </option>
-                            </select>
+                                :options="catalogos.categorias"
+                                valueKey="id_categoria"
+                                labelKey="nombre"
+                                placeholder="Todas las Categorías"
+                                searchPlaceholder="Filtrar categoría..."
+                                @change="Filtrar"
+                            />
                         </div>
 
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-1">
                                 Marca
                             </label>
-                            <select
+                            <SelectFiltro
                                 v-model="filtroForm.id_marca"
-                                class="w-full py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-sm text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500"
-                            >
-                                <option value="">Todas las Marcas</option>
-                                <option v-for="marca in catalogos.marcas" :key="marca.id_marca" :value="marca.id_marca">
-                                    {{ marca.nombre }}
-                                </option>
-                            </select>
+                                :options="catalogos.marcas"
+                                valueKey="id_marca"
+                                labelKey="nombre"
+                                placeholder="Todas las Marcas"
+                                searchPlaceholder="Filtrar marca..."
+                                @change="Filtrar"
+                            />
                         </div>
 
                         <div class="flex items-center gap-2">
@@ -641,28 +653,26 @@ const VerMovimientos = async (producto) =>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Categoría</label>
-                            <select
+                            <SelectFiltro
                                 v-model="form.id_categoria"
-                                class="w-full py-2 px-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm"
-                            >
-                                <option value="">Seleccione Categoría</option>
-                                <option v-for="cat in catalogos.categorias" :key="cat.id_categoria" :value="cat.id_categoria">
-                                    {{ cat.nombre }}
-                                </option>
-                            </select>
+                                :options="catalogos.categorias"
+                                valueKey="id_categoria"
+                                labelKey="nombre"
+                                placeholder="Seleccione Categoría"
+                                searchPlaceholder="Filtrar categoría..."
+                            />
                         </div>
 
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Marca</label>
-                            <select
+                            <SelectFiltro
                                 v-model="form.id_marca"
-                                class="w-full py-2 px-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm"
-                            >
-                                <option value="">Seleccione Marca</option>
-                                <option v-for="marca in catalogos.marcas" :key="marca.id_marca" :value="marca.id_marca">
-                                    {{ marca.nombre }}
-                                </option>
-                            </select>
+                                :options="catalogos.marcas"
+                                valueKey="id_marca"
+                                labelKey="nombre"
+                                placeholder="Seleccione Marca"
+                                searchPlaceholder="Filtrar marca..."
+                            />
                         </div>
 
                         <div>
@@ -787,28 +797,23 @@ const VerMovimientos = async (producto) =>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Unidad Principal *</label>
-                                <select
+                                <SelectFiltro
                                     v-model="form.id_unidad"
-                                    required
-                                    class="w-full py-2 px-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm"
-                                >
-                                    <option v-for="u in catalogos.unidades" :key="u.id_unidad" :value="u.id_unidad">
-                                        {{ u.nombre }} ({{ u.abreviatura }})
-                                    </option>
-                                </select>
+                                    :options="OpcionesUnidades"
+                                    :permitirLimpiar="false"
+                                    placeholder="Seleccione Unidad Principal"
+                                    searchPlaceholder="Filtrar unidad..."
+                                />
                             </div>
 
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Unidad Secundaria (Opcional)</label>
-                                <select
+                                <SelectFiltro
                                     v-model="form.id_unidad_secundaria"
-                                    class="w-full py-2 px-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm"
-                                >
-                                    <option value="">Ninguna</option>
-                                    <option v-for="u in catalogos.unidades" :key="u.id_unidad" :value="u.id_unidad">
-                                        {{ u.nombre }} ({{ u.abreviatura }})
-                                    </option>
-                                </select>
+                                    :options="OpcionesUnidades"
+                                    placeholder="Ninguna (Opcional)"
+                                    searchPlaceholder="Filtrar unidad secundaria..."
+                                />
                             </div>
                         </div>
 
@@ -934,7 +939,7 @@ const VerMovimientos = async (producto) =>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             <tr v-for="mov in movimientos" :key="mov.id_movimiento_inventario">
                                 <td class="px-4 py-2.5 text-gray-600 dark:text-gray-300 font-mono">
-                                    {{ new Date(mov.created_at).toLocaleString() }}
+                                    {{ FormatearFechaHora(mov.created_at) }}
                                 </td>
                                 <td class="px-4 py-2.5">
                                     <span

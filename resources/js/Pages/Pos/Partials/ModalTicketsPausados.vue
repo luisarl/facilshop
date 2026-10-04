@@ -1,16 +1,20 @@
 <script setup>
 import { usePosStore } from '@/Stores/usePosStore';
+import { FormatearHora } from '@/Utils/FechaHora';
 
 const emit = defineEmits(['cerrar']);
 const posStore = usePosStore();
 
-const Recuperar = (ticketId) => {
+const Recuperar = (ticketId) =>
+{
     posStore.recuperarTicket(ticketId);
     emit('cerrar');
 };
 
-const Descartar = (ticketId) => {
-    if (confirm('¿Está seguro de descartar este ticket pausado?')) {
+const Descartar = (ticketId) =>
+{
+    if (confirm('¿Está seguro de descartar este ticket pausado?'))
+    {
         posStore.eliminarTicketPausado(ticketId);
     }
 };
@@ -51,7 +55,7 @@ const Descartar = (ticketId) => {
                                 {{ ticket.cliente?.nombre || 'Cliente Mostrador' }}
                             </div>
                             <div class="text-[11px] text-gray-400 font-mono mt-0.5">
-                                Pausado: {{ new Date(ticket.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }} | {{ ticket.items.length }} productos
+                                Pausado: {{ FormatearHora(ticket.fecha) }} | {{ ticket.items.length }} productos
                             </div>
                         </div>
 

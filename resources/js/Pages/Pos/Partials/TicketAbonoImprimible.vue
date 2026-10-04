@@ -1,4 +1,6 @@
 <script setup>
+import { FormatearFechaHora } from '@/Utils/FechaHora';
+
 const props = defineProps({
     abono: Object,
     tasaVes: Number,
@@ -28,7 +30,7 @@ const Imprimir = () =>
                 </div>
                 <div class="font-bold text-xs">{{ abono.comprobante_abono }}</div>
                 <div class="text-[10px] text-gray-500">
-                    {{ new Date(abono.fecha || Date.now()).toLocaleDateString() }} {{ new Date(abono.fecha || Date.now()).toLocaleTimeString() }}
+                    {{ FormatearFechaHora(abono.fecha || Date.now()) }}
                 </div>
                 <div class="text-[10px] text-gray-700 font-bold pt-1">
                     Cliente: {{ abono.cliente?.nombre }}

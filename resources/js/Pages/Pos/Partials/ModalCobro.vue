@@ -16,6 +16,14 @@ const pagos = ref([]);
 const procesando = ref(false);
 const errorMensaje = ref(null);
 
+const OpcionesMetodosPago = computed(() =>
+{
+    return (props.metodosPago || []).map((m) => ({
+        value: m.id_metodo_pago,
+        label: `${m.nombre} (${m.moneda?.codigo || ''})`
+    }));
+});
+
 // Datos para Cashea si aplica
 const datosCashea = ref({
     activo: false,
@@ -318,15 +326,14 @@ const ProcesarCobro = async () => {
                     >
                         <!-- Selector de Método -->
                         <div class="w-full sm:w-1/3">
-                            <select
-                                :value="pago.id_metodo_pago"
-                                @change="CambiarMetodo(pago, Number($event.target.value))"
-                                class="w-full py-1.5 px-2.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-xs font-semibold"
-                            >
-                                <option v-for="m in metodosPago" :key="m.id_metodo_pago" :value="m.id_metodo_pago">
-                                    {{ m.nombre }} ({{ m.moneda?.codigo }})
-                                </option>
-                            </select>
+                            <SelectFiltro
+                                :modelValue="pago.id_metodo_pago"
+                                :options="OpcionesMetodosPago"
+                                :permitirLimpiar="false"
+                                placeholder="Seleccionar método..."
+                                searchPlaceholder="Filtrar método de pago..."
+                                @change="(val) => CambiarMetodo(pago, Number(val))"
+                            />
                         </div>
 
                         <!-- Monto en Moneda del Método -->

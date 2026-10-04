@@ -1,4 +1,6 @@
 <script setup>
+import { FormatearFechaHora } from '@/Utils/FechaHora';
+
 const props = defineProps({
     venta: Object,
     tasaVes: Number,
@@ -6,7 +8,8 @@ const props = defineProps({
 
 const emit = defineEmits(['cerrar']);
 
-const Imprimir = () => {
+const Imprimir = () =>
+{
     window.print();
 };
 </script>
@@ -24,7 +27,7 @@ const Imprimir = () => {
                 <div class="border-b border-dashed border-gray-300 my-2"></div>
                 <div class="font-bold text-sm">{{ venta.tipo_comprobante }} #{{ venta.numero_comprobante }}</div>
                 <div class="text-[10px] text-gray-500">
-                    {{ new Date(venta.created_at).toLocaleDateString() }} {{ new Date(venta.created_at).toLocaleTimeString() }}
+                    {{ FormatearFechaHora(venta.created_at) }}
                 </div>
                 <div class="text-[10px] text-gray-500">
                     Cajero: {{ venta.caja_turno?.usuario?.nombre || 'Caja 1' }}

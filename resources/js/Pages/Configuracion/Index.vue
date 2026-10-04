@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { Head, useForm, router, Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { FormatearFechaHora } from '@/Utils/FechaHora';
 
 const props = defineProps({
     usuarios: Array,
@@ -13,10 +14,17 @@ const props = defineProps({
     tabActivo: String,
 });
 
+const OpcionesRoles = [
+    { value: 'cajero', label: 'Cajero (Ventas y Cobros POS)' },
+    { value: 'admin', label: 'Administrador (Inventario y Gestión)' },
+    { value: 'superadmin', label: 'Super Administrador (Acceso Total)' }
+];
+
 // Pestaña Activa
 const tabActual = ref(props.tabActivo || 'usuarios');
 
-const CambiarTab = (tab) => {
+const CambiarTab = (tab) =>
+{
     tabActual.value = tab;
     router.get(route('configuracion.index'), { tab }, { preserveState: true, replace: true });
 };
@@ -111,6 +119,16 @@ const formCategoria = useForm({
     descripcion: '',
     id_categoria_padre: '',
     activo: true,
+});
+
+const OpcionesCategoriasPadre = computed(() =>
+{
+    return (props.categorias || [])
+        .filter((c) => !categoriaEditando.value || c.id_categoria !== categoriaEditando.value.id_categoria)
+        .map((c) => ({
+            value: c.id_categoria,
+            label: c.nombre
+        }));
 });
 
 const categoriasFiltradas = computed(() => {
@@ -619,7 +637,7 @@ const AlternarEstadoMarca = (marca) => {
                             <div>
                                 <span class="font-bold text-gray-900 dark:text-white">{{ h.moneda?.nombre }}</span>
                                 <span class="text-gray-400 text-[11px] ml-1">por {{ h.usuario?.name || 'Sistema' }}</span>
-                                <div class="text-[10px] text-gray-400">{{ new Date(h.created_at).toLocaleString() }}</div>
+                                <div class="text-[10px] text-gray-400">{{ FormatearFechaHora(h.created_at) }}</div>
                             </div>
                             <div class="text-right font-mono">
                                 <span class="text-gray-400">{{ Number(h.tasa_anterior).toFixed(4) }} ➔</span>
@@ -659,11 +677,13 @@ const AlternarEstadoMarca = (marca) => {
 
                         <div>
                             <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">Rol Operativo *</label>
-                            <select v-model="formUsuario.rol" class="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                                <option value="cajero">Cajero (Ventas y Cobros POS)</option>
-                                <option value="admin">Administrador (Inventario y Gestión)</option>
-                                <option value="superadmin">Super Administrador (Acceso Total)</option>
-                            </select>
+                            <SelectFiltro
+                                v-model="formUsuario.rol"
+                                :options="OpcionesRoles"
+                                :permitirLimpiar="false"
+                                placeholder="Seleccione Rol..."
+                                searchPlaceholder="Filtrar rol..."
+                            />
                         </div>
 
                         <div>
@@ -703,16 +723,12 @@ const AlternarEstadoMarca = (marca) => {
 
                         <div>
                             <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">Categoría Padre (Opcional)</label>
-                            <select v-model="formCategoria.id_categoria_padre" class="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                                <option value="">Ninguna (Categoría Principal)</option>
-                                <option
-                                    v-for="cat in categorias.filter(c => !categoriaEditando || c.id_categoria !== categoriaEditando.id_categoria)"
-                                    :key="cat.id_categoria"
-                                    :value="cat.id_categoria"
-                                >
-                                    {{ cat.nombre }}
-                                </option>
-                            </select>
+                            <SelectFiltro
+                                v-model="formCategoria.id_categoria_padre"
+                                :options="OpcionesCategoriasPadre"
+                                placeholder="Ninguna (Categoría Principal)"
+                                searchPlaceholder="Filtrar categoría..."
+                            />
                         </div>
 
                         <div>

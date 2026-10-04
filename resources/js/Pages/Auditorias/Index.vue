@@ -4,6 +4,7 @@ import { Head, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ModalDiffAuditoria from '@/Pages/Auditorias/Partials/ModalDiffAuditoria.vue';
 import ModalHistorialEntidad from '@/Pages/Auditorias/Partials/ModalHistorialEntidad.vue';
+import { FormatearFechaHora } from '@/Utils/FechaHora';
 import axios from 'axios';
 
 const props = defineProps({
@@ -270,52 +271,48 @@ const BadgeAccion = (acc) =>
 
                     <div>
                         <label class="block text-[10px] font-semibold text-gray-500 uppercase mb-1">Módulo</label>
-                        <select
+                        <SelectFiltro
                             v-model="modulo"
+                            :options="modulos"
+                            placeholder="Todos"
+                            searchPlaceholder="Filtrar módulo..."
                             @change="AplicarFiltros"
-                            class="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                        >
-                            <option value="">Todos</option>
-                            <option v-for="m in modulos" :key="m" :value="m">{{ m }}</option>
-                        </select>
+                        />
                     </div>
 
                     <div>
                         <label class="block text-[10px] font-semibold text-gray-500 uppercase mb-1">Acción</label>
-                        <select
+                        <SelectFiltro
                             v-model="accion"
+                            :options="acciones"
+                            placeholder="Todas"
+                            searchPlaceholder="Filtrar acción..."
                             @change="AplicarFiltros"
-                            class="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                        >
-                            <option value="">Todas</option>
-                            <option v-for="a in acciones" :key="a" :value="a">{{ a }}</option>
-                        </select>
+                        />
                     </div>
 
                     <div>
                         <label class="block text-[10px] font-semibold text-gray-500 uppercase mb-1">Tabla Afectada</label>
-                        <select
+                        <SelectFiltro
                             v-model="tablaAfectada"
+                            :options="tablas"
+                            placeholder="Todas las tablas"
+                            searchPlaceholder="Filtrar tabla..."
                             @change="AplicarFiltros"
-                            class="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white font-mono"
-                        >
-                            <option value="">Todas las tablas</option>
-                            <option v-for="t in tablas" :key="t" :value="t">{{ t }}</option>
-                        </select>
+                        />
                     </div>
 
                     <div>
                         <label class="block text-[10px] font-semibold text-gray-500 uppercase mb-1">Usuario</label>
-                        <select
+                        <SelectFiltro
                             v-model="idUsuario"
+                            :options="usuarios"
+                            valueKey="id_usuario"
+                            labelKey="nombre"
+                            placeholder="Todos los usuarios"
+                            searchPlaceholder="Filtrar usuario..."
                             @change="AplicarFiltros"
-                            class="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                        >
-                            <option value="">Todos los usuarios</option>
-                            <option v-for="u in usuarios" :key="u.id_usuario" :value="u.id_usuario">
-                                {{ u.nombre || u.name }}
-                            </option>
-                        </select>
+                        />
                     </div>
 
                     <div class="grid grid-cols-2 gap-1.5">
@@ -397,7 +394,7 @@ const BadgeAccion = (acc) =>
                                         #{{ a.id_auditoria }}
                                     </div>
                                     <div class="text-[10px] text-gray-400 font-mono">
-                                        {{ new Date(a.created_at).toLocaleString() }}
+                                        {{ FormatearFechaHora(a.created_at, true) }}
                                     </div>
                                 </td>
 

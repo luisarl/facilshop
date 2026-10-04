@@ -2,6 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
+import { FormatearFechaHora } from '@/Utils/FechaHora';
 
 const props = defineProps({
     monedas: {
@@ -224,7 +225,7 @@ const calcularInversa = computed(() => {
                                     class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30"
                                 >
                                     <td class="whitespace-nowrap px-6 py-4 font-mono text-xs">
-                                        {{ new Date(item.created_at).toLocaleString('es-VE') }}
+                                        {{ FormatearFechaHora(item.created_at) }}
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-4 font-semibold text-gray-900 dark:text-white">
                                         {{ item.moneda?.codigo || monedaHistoricoSeleccionada?.codigo }}

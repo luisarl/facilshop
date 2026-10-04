@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { FormatearFecha, FormatearFechaHora } from '@/Utils/FechaHora';
 
 const props = defineProps({
     kpis: Object,
@@ -34,12 +35,7 @@ const SaludoHorario = computed(() =>
 
 const FechaHoyFormateada = computed(() =>
 {
-    return new Date().toLocaleDateString('es-VE', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
+    return FormatearFecha(new Date());
 });
 
 const BadgeAccion = (acc) =>
@@ -456,7 +452,7 @@ const BadgeAccion = (acc) =>
                                         <span class="text-gray-400 font-mono text-[10px]">({{ a.tabla_afectada }})</span>
                                     </div>
                                     <div class="text-[10px] text-gray-400 font-mono">
-                                        {{ a.usuario?.nombre || a.usuario?.name || 'Sistema' }} • {{ new Date(a.created_at).toLocaleTimeString() }}
+                                        {{ a.usuario?.nombre || a.usuario?.name || 'Sistema' }} • {{ FormatearFechaHora(a.created_at) }}
                                     </div>
                                 </div>
                             </div>

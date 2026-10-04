@@ -2,12 +2,19 @@
 import { ref, reactive } from 'vue';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { FormatearFechaHora } from '@/Utils/FechaHora';
 
 const props = defineProps({
     conteos: Object,
     filtros: Object,
     catalogos: Object,
 });
+
+const OpcionesEstados = [
+    { value: 'EN_PROCESO', label: 'EN PROCESO (Abierto)' },
+    { value: 'APLICADO', label: 'APLICADO (Conciliado)' },
+    { value: 'CANCELADO', label: 'CANCELADO' }
+];
 
 const filtroForm = reactive({
     buscar: props.filtros?.buscar || '',
@@ -16,7 +23,8 @@ const filtroForm = reactive({
     fecha_hasta: props.filtros?.fecha_hasta || '',
 });
 
-const Filtrar = () => {
+const Filtrar = () =>
+{
     router.get(route('inventario.conteos.index'), filtroForm, {
         preserveState: true,
         replace: true,
@@ -107,15 +115,13 @@ const IniciarConteo = () => {
                             <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-1">
                                 Estado
                             </label>
-                            <select
+                            <SelectFiltro
                                 v-model="filtroForm.estado"
-                                class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm"
-                            >
-                                <option value="">Todos los Estados</option>
-                                <option value="EN_PROCESO">EN PROCESO (Abierto)</option>
-                                <option value="APLICADO">APLICADO (Conciliado)</option>
-                                <option value="CANCELADO">CANCELADO</option>
-                            </select>
+                                :options="OpcionesEstados"
+                                placeholder="Todos los Estados"
+                                searchPlaceholder="Filtrar estado..."
+                                @change="Filtrar"
+                            />
                         </div>
 
                         <div>
@@ -239,7 +245,7 @@ const IniciarConteo = () => {
                                             {{ conteo.usuario?.nombre }}
                                         </div>
                                         <div class="text-xs text-gray-400 font-mono">
-                                            {{ new Date(conteo.fecha_inicio).toLocaleDateString() }} {{ new Date(conteo.fecha_inicio).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
+                                            {{ FormatearFechaHora(conteo.fecha_inicio) }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 text-center">
@@ -324,30 +330,28 @@ const IniciarConteo = () => {
                             <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                                 Filtrar por Categoría
                             </label>
-                            <select
+                            <SelectFiltro
                                 v-model="formIniciar.id_categoria"
-                                class="w-full py-2 px-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm"
-                            >
-                                <option value="">Todas las Categorías</option>
-                                <option v-for="cat in catalogos.categorias" :key="cat.id_categoria" :value="cat.id_categoria">
-                                    {{ cat.nombre }}
-                                </option>
-                            </select>
+                                :options="catalogos.categorias"
+                                valueKey="id_categoria"
+                                labelKey="nombre"
+                                placeholder="Todas las Categorías"
+                                searchPlaceholder="Filtrar categoría..."
+                            />
                         </div>
 
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                                 Filtrar por Marca
                             </label>
-                            <select
+                            <SelectFiltro
                                 v-model="formIniciar.id_marca"
-                                class="w-full py-2 px-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm"
-                            >
-                                <option value="">Todas las Marcas</option>
-                                <option v-for="marca in catalogos.marcas" :key="marca.id_marca" :value="marca.id_marca">
-                                    {{ marca.nombre }}
-                                </option>
-                            </select>
+                                :options="catalogos.marcas"
+                                valueKey="id_marca"
+                                labelKey="nombre"
+                                placeholder="Todas las Marcas"
+                                searchPlaceholder="Filtrar marca..."
+                            />
                         </div>
                     </div>
 

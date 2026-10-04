@@ -37,6 +37,23 @@ watch(() => props.productos, (nuevosProductos) =>
 // Catálogo reactivo de clientes para sincronización en tiempo real
 const listaClientes = ref([...(props.clientes || [])]);
 
+const OpcionesClientesPos = computed(() =>
+{
+    return (listaClientes.value || []).map((c) => ({
+        value: c.id_cliente,
+        label: `${c.nombre} (${c.identificacion})`
+    }));
+});
+
+const SeleccionarClientePos = (id) =>
+{
+    const cliente = (listaClientes.value || []).find((c) => c.id_cliente === Number(id));
+    if (cliente)
+    {
+        posStore.setCliente(cliente);
+    }
+};
+
 watch(() => props.clientes, (nuevosClientes) =>
 {
     if (nuevosClientes && Array.isArray(nuevosClientes))
@@ -621,15 +638,16 @@ const MostrarAlerta = (mensaje, tipo = 'info') =>
                                 <span>+</span> Nuevo
                             </button>
                         </div>
-                        <select
-                            :value="posStore.clienteSeleccionado?.id_cliente"
-                            @change="posStore.setCliente(listaClientes.find(c => c.id_cliente === Number($event.target.value)))"
-                            class="py-1 px-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-semibold max-w-[200px]"
-                        >
-                            <option v-for="c in listaClientes" :key="c.id_cliente" :value="c.id_cliente">
-                                {{ c.nombre }} ({{ c.identificacion }})
-                            </option>
-                        </select>
+                        <div class="w-52">
+                            <SelectFiltro
+                                :modelValue="posStore.clienteSeleccionado?.id_cliente"
+                                :options="OpcionesClientesPos"
+                                :permitirLimpiar="false"
+                                placeholder="Seleccionar cliente..."
+                                searchPlaceholder="Filtrar cliente..."
+                                @change="SeleccionarClientePos"
+                            />
+                        </div>
                     </div>
 
                     <!-- BADGE DE DEUDA SI EL CLIENTE SELECCIONADO TIENE SALDO PENDIENTE -->
@@ -714,19 +732,18 @@ const MostrarAlerta = (mensaje, tipo = 'info') =>
                         <!-- CONTROLES DE CANTIDAD, UNIDAD Y SUBTOTAL -->
                         <div class="flex items-center justify-between gap-2 pt-1 border-t border-gray-200/50 dark:border-gray-700/50">
                             <!-- Selector de Unidad Multiescala si tiene secundaria -->
-                            <select
-                                v-if="item.unidad_secundaria"
-                                :value="item.id_unidad"
-                                @change="posStore.cambiarUnidad(index, Number($event.target.value))"
-                                class="py-1 px-1.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-[10px] font-bold"
-                            >
-                                <option :value="item.id_unidad_principal">
-                                    {{ item.unidad_principal?.nombre }} (1x)
-                                </option>
-                                <option :value="item.id_unidad_secundaria">
-                                    {{ item.unidad_secundaria?.nombre }} ({{ item.equivalencia_unidad_secundaria }}x)
-                                </option>
-                            </select>
+                            <div v-if="item.unidad_secundaria" class="w-28">
+                                <SelectFiltro
+                                    :modelValue="item.id_unidad"
+                                    :options="[
+                                        { value: item.id_unidad_principal, label: item.unidad_principal?.nombre + ' (1x)' },
+                                        { value: item.unidad_secundaria, label: item.unidad_secundaria?.nombre + ' (' + item.equivalencia_unidad_secundaria + 'x)' }
+                                    ]"
+                                    :permitirLimpiar="false"
+                                    searchPlaceholder="Filtrar unidad..."
+                                    @change="(val) => posStore.cambiarUnidad(index, Number(val))"
+                                />
+                            </div>
                             <span v-else class="text-[10px] font-bold text-gray-400">
                                 {{ item.unidad_nombre }}
                             </span>

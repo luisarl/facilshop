@@ -212,15 +212,15 @@ const RegistrarAjuste = () => {
                                 <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                                     Tipo de Movimiento * (Filtrado por {{ naturalezaSeleccionada }})
                                 </label>
-                                <select
+                                <SelectFiltro
                                     v-model="form.id_tipo_movimiento"
-                                    required
-                                    class="w-full py-2.5 px-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm font-semibold"
-                                >
-                                    <option v-for="tipo in tiposMovimientoDisponibles" :key="tipo.id_tipo_movimiento" :value="tipo.id_tipo_movimiento">
-                                        {{ tipo.nombre }}
-                                    </option>
-                                </select>
+                                    :options="tiposMovimientoDisponibles"
+                                    valueKey="id_tipo_movimiento"
+                                    labelKey="nombre"
+                                    :permitirLimpiar="false"
+                                    placeholder="Seleccione tipo de movimiento..."
+                                    searchPlaceholder="Filtrar tipo de movimiento..."
+                                />
                                 <p v-if="form.errors.id_tipo_movimiento" class="text-xs text-rose-500 mt-1">
                                     {{ form.errors.id_tipo_movimiento }}
                                 </p>
@@ -335,18 +335,16 @@ const RegistrarAjuste = () => {
                                             {{ fila.stock_actual }}
                                         </td>
                                         <td class="px-4 py-3">
-                                            <select
+                                            <SelectFiltro
                                                 v-model="fila.id_unidad"
+                                                :options="[
+                                                    { value: fila.unidad_principal?.id_unidad, label: fila.unidad_principal?.nombre + ' (1x)' },
+                                                    ...(fila.unidad_secundaria ? [{ value: fila.unidad_secundaria?.id_unidad, label: fila.unidad_secundaria?.nombre + ' (' + fila.equivalencia_unidad_secundaria + 'x)' }] : [])
+                                                ]"
+                                                :permitirLimpiar="false"
+                                                searchPlaceholder="Filtrar unidad..."
                                                 @change="ActualizarCalculosFila(fila)"
-                                                class="py-1 px-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-xs"
-                                            >
-                                                <option :value="fila.unidad_principal?.id_unidad">
-                                                    {{ fila.unidad_principal?.nombre }} (1x)
-                                                </option>
-                                                <option v-if="fila.unidad_secundaria" :value="fila.unidad_secundaria?.id_unidad">
-                                                    {{ fila.unidad_secundaria?.nombre }} ({{ fila.equivalencia_unidad_secundaria }}x)
-                                                </option>
-                                            </select>
+                                            />
                                         </td>
                                         <td class="px-4 py-3 text-right">
                                             <input

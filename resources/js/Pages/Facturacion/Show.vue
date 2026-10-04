@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
+import { FormatearFechaHora } from '@/Utils/FechaHora';
 import QRCode from 'qrcode';
 
 const props = defineProps({
@@ -80,7 +81,7 @@ const Imprimir = () => {
                             {{ venta.tipo_comprobante }} N° {{ venta.numero_comprobante }}
                         </div>
                         <div class="text-xs text-gray-500 mt-2 space-y-0.5">
-                            <div><strong>Fecha:</strong> {{ new Date(venta.created_at).toLocaleString() }}</div>
+                            <div><strong>Fecha:</strong> {{ FormatearFechaHora(venta.created_at) }}</div>
                             <div><strong>Caja / Turno:</strong> N° {{ venta.id_caja_turno }}</div>
                             <div><strong>Cajero:</strong> {{ venta.caja_turno?.usuario?.name || 'Administración' }}</div>
                             <div><strong>Estado:</strong> <span class="font-bold text-emerald-600">{{ venta.estado }}</span></div>

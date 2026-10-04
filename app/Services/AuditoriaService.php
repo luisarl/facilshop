@@ -263,7 +263,7 @@ class AuditoriaService
                 'ip_direccion' => $auditoria->ip_direccion,
                 'user_agent' => $auditoria->user_agent,
                 'url' => $auditoria->url,
-                'fecha_hora' => $auditoria->created_at ? $auditoria->created_at->format('Y-m-d H:i:s') : null,
+                'fecha_hora' => $auditoria->created_at ? $auditoria->created_at->format('d-m-Y h:i:s A') : null,
                 'resumen' => $this->CalcularResumenCambios($auditoria),
                 'diff' => $diff,
             ];
@@ -289,7 +289,7 @@ class AuditoriaService
         {
             fputcsv($output, [
                 $a->id_auditoria,
-                $a->created_at ? $a->created_at->toDateTimeString() : '',
+                $a->created_at ? $a->created_at->format('d-m-Y h:i:s A') : '',
                 $a->Usuario?->nombre ?? $a->Usuario?->name ?? 'Sistema / Anónimo',
                 $a->modulo,
                 $a->accion,

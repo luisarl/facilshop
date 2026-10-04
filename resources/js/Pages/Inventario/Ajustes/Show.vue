@@ -1,12 +1,14 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { FormatearFechaHora } from '@/Utils/FechaHora';
 
 const props = defineProps({
     ajuste: Object,
 });
 
-const Imprimir = () => {
+const Imprimir = () =>
+{
     window.print();
 };
 </script>
@@ -72,7 +74,7 @@ const Imprimir = () => {
                                 {{ ajuste.codigo_ajuste }}
                             </div>
                             <div class="text-xs text-gray-500 font-mono mt-1">
-                                Fecha: {{ new Date(ajuste.fecha_ajuste).toLocaleDateString() }} {{ new Date(ajuste.fecha_ajuste).toLocaleTimeString() }}
+                                Fecha: {{ FormatearFechaHora(ajuste.fecha_ajuste) }}
                             </div>
                         </div>
                     </div>

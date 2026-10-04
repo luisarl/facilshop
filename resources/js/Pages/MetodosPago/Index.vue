@@ -1,7 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 const props = defineProps({
     metodosPago: {
@@ -35,6 +35,19 @@ const tiposMetodo = [
     { valor: 'CREDITO', label: 'Crédito Interno', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300' },
     { valor: 'FINANCIAMIENTO', label: 'Financiamiento BNPL (Cashea)', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/60 dark:text-yellow-300' },
 ];
+
+const OpcionesMonedas = computed(() =>
+{
+    return (props.monedas || []).map((m) => ({
+        value: m.id_moneda,
+        label: `${m.codigo} - ${m.nombre} (${m.simbolo})`
+    }));
+});
+
+const OpcionesTiposMetodo = tiposMetodo.map((t) => ({
+    value: t.valor,
+    label: t.label
+}));
 
 const obtenerBadgeTipo = (tipo) => {
     const item = tiposMetodo.find(t => t.valor === tipo);
@@ -260,15 +273,13 @@ const alternarEstado = (metodo) => {
                             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                                 Moneda Asignada
                             </label>
-                            <select
+                            <SelectFiltro
                                 v-model="form.id_moneda"
-                                required
-                                class="mt-1 block w-full rounded-xl border-gray-300 py-2.5 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            >
-                                <option v-for="m in monedas" :key="m.id_moneda" :value="m.id_moneda">
-                                    {{ m.codigo }} - {{ m.nombre }} ({{ m.simbolo }})
-                                </option>
-                            </select>
+                                :options="OpcionesMonedas"
+                                :permitirLimpiar="false"
+                                placeholder="Seleccione Moneda..."
+                                searchPlaceholder="Filtrar moneda..."
+                            />
                             <p v-if="form.errors.id_moneda" class="mt-1 text-xs text-rose-600">{{ form.errors.id_moneda }}</p>
                         </div>
 
@@ -276,15 +287,13 @@ const alternarEstado = (metodo) => {
                             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                                 Tipo de Método
                             </label>
-                            <select
+                            <SelectFiltro
                                 v-model="form.tipo"
-                                required
-                                class="mt-1 block w-full rounded-xl border-gray-300 py-2.5 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            >
-                                <option v-for="t in tiposMetodo" :key="t.valor" :value="t.valor">
-                                    {{ t.label }}
-                                </option>
-                            </select>
+                                :options="OpcionesTiposMetodo"
+                                :permitirLimpiar="false"
+                                placeholder="Seleccione Tipo de Método..."
+                                searchPlaceholder="Filtrar tipo..."
+                            />
                             <p v-if="form.errors.tipo" class="mt-1 text-xs text-rose-600">{{ form.errors.tipo }}</p>
                         </div>
                     </div>

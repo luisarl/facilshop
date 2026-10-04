@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { FormatearFecha } from '@/Utils/FechaHora';
 import axios from 'axios';
 
 const props = defineProps({
@@ -13,11 +14,28 @@ const props = defineProps({
     tasaVes: Number,
 });
 
+const OpcionesEstadoCredito = [
+    { value: 'CON_DEUDA', label: 'Con Deuda Pendiente' },
+    { value: 'AL_DIA', label: 'Al Día (Sin Saldo)' },
+    { value: 'LIMITE_ALCANZADO', label: 'Límite Alcanzado' }
+];
+
+const OpcionesMetodosAbono = computed(() =>
+{
+    return (props.metodosPago || [])
+        .filter((mp) => mp.tipo !== 'CREDITO' && mp.tipo !== 'FINANCIAMIENTO')
+        .map((m) => ({
+            value: m.id_metodo_pago,
+            label: `${m.nombre} (${m.moneda?.codigo || ''})`
+        }));
+});
+
 // Filtros y Búsqueda
 const buscar = ref(props.filtros?.buscar || '');
 const estadoCredito = ref(props.filtros?.estado_credito || '');
 
-const AplicarFiltros = () => {
+const AplicarFiltros = () =>
+{
     router.get(route('clientes.index'), {
         buscar: buscar.value || undefined,
         estado_credito: estadoCredito.value || undefined,
@@ -296,16 +314,13 @@ const VerEstadoCuenta = async (cliente) => {
                 </div>
 
                 <div class="w-full sm:w-56">
-                    <select
+                    <SelectFiltro
                         v-model="estadoCredito"
+                        :options="OpcionesEstadoCredito"
+                        placeholder="Todos los Estados"
+                        searchPlaceholder="Filtrar estado..."
                         @change="AplicarFiltros"
-                        class="w-full text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white py-2 px-3 focus:ring-2 focus:ring-indigo-500"
-                    >
-                        <option value="">Todos los Estados</option>
-                        <option value="CON_DEUDA">Con Deuda Pendiente</option>
-                        <option value="AL_DIA">Al Día (Sin Saldo)</option>
-                        <option value="LIMITE_ALCANZADO">Límite Alcanzado</option>
-                    </select>
+                    />
                 </div>
 
                 <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -609,19 +624,14 @@ const VerEstadoCuenta = async (cliente) => {
                             <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase mb-1">
                                 Método de Cobro
                             </label>
-                            <select
-                                :value="formAbono.id_metodo_pago"
-                                @change="CambiarMetodoPagoAbono($event.target.value)"
-                                class="w-full text-sm rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            >
-                                <option
-                                    v-for="m in metodosPago.filter(mp => mp.tipo !== 'CREDITO' && mp.tipo !== 'FINANCIAMIENTO')"
-                                    :key="m.id_metodo_pago"
-                                    :value="m.id_metodo_pago"
-                                >
-                                    {{ m.nombre }} ({{ m.moneda?.codigo }})
-                                </option>
-                            </select>
+                            <SelectFiltro
+                                v-model="formAbono.id_metodo_pago"
+                                :options="OpcionesMetodosAbono"
+                                :permitirLimpiar="false"
+                                placeholder="Seleccione método de cobro..."
+                                searchPlaceholder="Filtrar método..."
+                                @change="CambiarMetodoPagoAbono"
+                            />
                         </div>
 
                         <!-- Monto en Moneda del Método -->
@@ -763,7 +773,7 @@ const VerEstadoCuenta = async (cliente) => {
                                             {{ v.numero_comprobante }}
                                         </div>
                                         <div class="text-gray-500 text-[11px]">
-                                            {{ new Date(v.created_at).toLocaleDateString() }} - {{ v.tipo_comprobante }}
+                                            {{ FormatearFecha(v.created_at) }} - {{ v.tipo_comprobante }}
                                         </div>
                                         <div class="text-gray-400 text-[10px] mt-0.5">
                                             {{ v.detalles?.length || 0 }} productos adquiridos

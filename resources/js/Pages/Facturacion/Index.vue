@@ -2,6 +2,7 @@
 import { ref, watch, nextTick } from 'vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { FormatearFecha, FormatearHora, FormatearFechaHora } from '@/Utils/FechaHora';
 import QRCode from 'qrcode';
 
 const props = defineProps({
@@ -18,6 +19,17 @@ const estado = ref(props.filtros?.estado || '');
 const fechaDesde = ref(props.filtros?.fecha_desde || '');
 const fechaHasta = ref(props.filtros?.fecha_hasta || '');
 const soloCashea = ref(props.filtros?.solo_cashea === 'true' || false);
+
+const OpcionesComprobante = [
+    { value: 'TICKET', label: 'Ticket' },
+    { value: 'FACTURA', label: 'Factura' },
+    { value: 'BOLETA', label: 'Boleta' },
+];
+
+const OpcionesEstado = [
+    { value: 'COMPLETADA', label: 'Completada' },
+    { value: 'ANULADA', label: 'Anulada' },
+];
 
 const AplicarFiltros = () => {
     router.get(route('facturacion.index'), {
@@ -231,29 +243,24 @@ const ProcesarAnulacion = () => {
 
                     <div>
                         <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Comprobante</label>
-                        <select
+                        <SelectFiltro
                             v-model="tipoComprobante"
+                            :options="OpcionesComprobante"
+                            placeholder="Todos"
+                            searchPlaceholder="Filtrar comprobante..."
                             @change="AplicarFiltros"
-                            class="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                        >
-                            <option value="">Todos</option>
-                            <option value="TICKET">Ticket</option>
-                            <option value="FACTURA">Factura</option>
-                            <option value="BOLETA">Boleta</option>
-                        </select>
+                        />
                     </div>
 
                     <div>
                         <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Estado</label>
-                        <select
+                        <SelectFiltro
                             v-model="estado"
+                            :options="OpcionesEstado"
+                            placeholder="Todos"
+                            searchPlaceholder="Filtrar estado..."
                             @change="AplicarFiltros"
-                            class="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                        >
-                            <option value="">Todos</option>
-                            <option value="COMPLETADA">Completada</option>
-                            <option value="ANULADA">Anulada</option>
-                        </select>
+                        />
                     </div>
 
                     <div>
@@ -339,10 +346,10 @@ const ProcesarAnulacion = () => {
                                 </td>
                                 <td class="px-5 py-3.5 whitespace-nowrap">
                                     <div class="text-gray-800 dark:text-gray-200">
-                                        {{ new Date(v.created_at).toLocaleDateString() }}
+                                        {{ FormatearFecha(v.created_at) }}
                                     </div>
                                     <div class="text-[10px] text-gray-400 font-mono">
-                                        {{ new Date(v.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
+                                        {{ FormatearHora(v.created_at) }}
                                     </div>
                                 </td>
                                 <td class="px-5 py-3.5">
@@ -490,7 +497,7 @@ const ProcesarAnulacion = () => {
                                     {{ ventaSeleccionada?.tipo_comprobante }}: {{ ventaSeleccionada?.numero_comprobante }}
                                 </span>
                                 <p class="text-xs text-gray-500 mt-1">
-                                    Fecha: {{ new Date(ventaSeleccionada?.created_at).toLocaleString() }}
+                                    Fecha: {{ FormatearFechaHora(ventaSeleccionada?.created_at) }}
                                 </p>
                                 <p class="text-xs text-gray-500">
                                     Cajero: {{ ventaSeleccionada?.caja_turno?.usuario?.name || 'Caja' }}
