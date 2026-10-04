@@ -279,7 +279,7 @@ const ProcesarCobro = async () => {
 
 <template>
     <div class="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-gray-100 dark:border-gray-700 space-y-6">
+        <div class="bg-white dark:bg-gray-800 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-gray-100 dark:border-gray-700 space-y-6 my-auto">
 
             <!-- ENCABEZADO Y TOTALES -->
             <div class="flex justify-between items-start pb-4 border-b border-gray-100 dark:border-gray-700">
@@ -319,11 +319,12 @@ const ProcesarCobro = async () => {
                     </button>
                 </div>
 
-                <div class="space-y-2.5 max-h-56 overflow-y-auto pr-1">
+                <div class="space-y-2.5">
                     <div
                         v-for="(pago, index) in pagos"
                         :key="index"
-                        class="p-3 bg-gray-50 dark:bg-gray-750 rounded-2xl border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row items-center gap-3"
+                        class="p-3 bg-gray-50 dark:bg-gray-750 rounded-2xl border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row items-center gap-3 relative"
+                        :style="{ zIndex: pagos.length - index + 20 }"
                     >
                         <!-- Selector de Método -->
                         <div class="w-full sm:w-1/3">
@@ -333,6 +334,7 @@ const ProcesarCobro = async () => {
                                 :permitirLimpiar="false"
                                 placeholder="Seleccionar método..."
                                 searchPlaceholder="Filtrar método de pago..."
+                                claseMenu="sm:min-w-[220px]"
                                 @change="(val) => CambiarMetodo(pago, Number(val))"
                             />
                         </div>

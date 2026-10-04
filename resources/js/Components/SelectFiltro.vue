@@ -38,6 +38,10 @@ const props = defineProps({
         type: String,
         default: ''
     },
+    claseMenu: {
+        type: String,
+        default: ''
+    },
     requerido: {
         type: Boolean,
         default: false
@@ -336,7 +340,10 @@ watch(busqueda, () =>
 <template>
     <div
         ref="contenedorRef"
-        class="relative select-none text-left w-full"
+        :class="[
+            'relative select-none text-left w-full',
+            abierto ? 'z-50' : ''
+        ]"
         @keydown="ManejarTeclas"
     >
         <!-- Boton disparador del Select2 -->
@@ -387,7 +394,10 @@ watch(busqueda, () =>
         <!-- Menu Desplegable Flotante tipo Select2 -->
         <div
             v-if="abierto"
-            class="absolute left-0 mt-1 w-full bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden text-xs"
+            :class="[
+                'absolute left-0 mt-1 w-full min-w-full bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden text-xs',
+                claseMenu
+            ]"
         >
             <!-- Cuadro de Busqueda Integrado -->
             <div class="p-2 border-b border-gray-100 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/50">
