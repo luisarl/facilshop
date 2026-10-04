@@ -26,7 +26,7 @@ class AuditoriaService
                     ->orWhere('id_registro_afectado', 'LIKE', "%{$termino}%")
                     ->orWhereHas('Usuario', function ($sub) use ($termino)
                     {
-                        $sub->where('name', 'LIKE', "%{$termino}%")
+                        $sub->where('nombre', 'LIKE', "%{$termino}%")
                             ->orWhere('email', 'LIKE', "%{$termino}%");
                     });
             });
@@ -82,8 +82,9 @@ class AuditoriaService
         $totalAnulaciones = AuditoriasModel::where('accion', 'ANULAR')->count();
         $totalGeneral = AuditoriasModel::count();
 
-        // Lista de usuarios y módulos para selects
-        $usuarios = UsuariosModel::select('id_usuario', 'name', 'email')->orderBy('name')->get();
+        // Lista de usuarios, tablas, módulos y acciones para selects
+        $usuarios = UsuariosModel::select('id_usuario', 'nombre', 'email')->orderBy('nombre')->get();
+        $tablas = AuditoriasModel::select('tabla_afectada')->distinct()->orderBy('tabla_afectada')->pluck('tabla_afectada');
         $modulos = AuditoriasModel::select('modulo')->distinct()->pluck('modulo');
         $acciones = AuditoriasModel::select('accion')->distinct()->pluck('accion');
 
@@ -98,6 +99,7 @@ class AuditoriaService
                 'total_anulaciones' => $totalAnulaciones,
             ],
             'usuarios' => $usuarios,
+            'tablas' => $tablas,
             'modulos' => $modulos,
             'acciones' => $acciones,
         ];
@@ -198,13 +200,81 @@ class AuditoriaService
             return "Registro eliminado del sistema.";
         }
 
+        if ($auditoria->accion === 'ANULAR')
+        {
+            $motivo = $auditoria->valores_nuevos['motivo'] ?? null;
+            return "Registro marcado como ANULADO" . ($motivo ? ": {$motivo}" : ".");
+        }
+
+        if ($auditoria->accion === 'APLICAR')
+        {
+            return "Registro aplicado y conciliado en inventario.";
+        }
+
+        if ($auditoria->accion === 'LOGIN')
+        {
+            $email = $auditoria->valores_nuevos['email'] ?? $auditoria->Usuario?->email ?? '';
+            return "Inicio de sesión exitoso (" . ($email ?: 'usuario autenticado') . ").";
+        }
+
+        if ($auditoria->accion === 'LOGOUT')
+        {
+            return "Cierre de sesión de usuario finalizado.";
+        }
+
+        if ($auditoria->accion === 'LOGIN_FALLIDO')
+        {
+            $email = $auditoria->valores_nuevos['email_ingresado'] ?? '';
+            return "Intento de inicio de sesión fallido (" . ($email ?: 'credenciales inválidas') . ").";
+        }
+
         if ($auditoria->accion === 'ACTUALIZAR' && is_array($auditoria->valores_nuevos))
         {
             $clavesModificadas = array_keys($auditoria->valores_nuevos);
             return "Campos modificados: " . implode(', ', array_slice($clavesModificadas, 0, 4)) . (count($clavesModificadas) > 4 ? '...' : '');
         }
 
-        return "Acción ejecutada en tabla {$auditoria->tabla_afectada}.";
+        return "Acción {$auditoria->accion} ejecutada en tabla {$auditoria->tabla_afectada}.";
+    }
+
+    public function ObtenerHistorialEntidad(string $tabla, int $id_registro): array
+    {
+        $tablaLimpia = strtolower(trim($tabla));
+        $auditorias = AuditoriasModel::with('Usuario')
+            ->where('tabla_afectada', $tablaLimpia)
+            ->where('id_registro_afectado', $id_registro)
+            ->orderBy('id_auditoria', 'desc')
+            ->get();
+
+        $timeline = [];
+        foreach ($auditorias as $auditoria)
+        {
+            $diff = $this->GenerarDiffDetallado(
+                $auditoria->valores_anteriores ?? [],
+                $auditoria->valores_nuevos ?? []
+            );
+
+            $timeline[] = [
+                'id_auditoria' => $auditoria->id_auditoria,
+                'accion' => $auditoria->accion,
+                'modulo' => $auditoria->modulo,
+                'usuario' => $auditoria->Usuario?->nombre ?? $auditoria->Usuario?->name ?? 'Sistema',
+                'usuario_email' => $auditoria->Usuario?->email ?? null,
+                'ip_direccion' => $auditoria->ip_direccion,
+                'user_agent' => $auditoria->user_agent,
+                'url' => $auditoria->url,
+                'fecha_hora' => $auditoria->created_at ? $auditoria->created_at->format('Y-m-d H:i:s') : null,
+                'resumen' => $this->CalcularResumenCambios($auditoria),
+                'diff' => $diff,
+            ];
+        }
+
+        return [
+            'tabla' => $tablaLimpia,
+            'id_registro' => $id_registro,
+            'total_eventos' => count($timeline),
+            'timeline' => $timeline,
+        ];
     }
 
     public function GenerarCsvLog(array $filtros = []): string
@@ -220,7 +290,7 @@ class AuditoriaService
             fputcsv($output, [
                 $a->id_auditoria,
                 $a->created_at ? $a->created_at->toDateTimeString() : '',
-                $a->Usuario?->name ?? 'Sistema / Anónimo',
+                $a->Usuario?->nombre ?? $a->Usuario?->name ?? 'Sistema / Anónimo',
                 $a->modulo,
                 $a->accion,
                 $a->tabla_afectada,

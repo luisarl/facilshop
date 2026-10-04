@@ -153,4 +153,91 @@ class AuditoriasTest extends TestCase
         $response->assertHeader('Content-Type', 'text/csv; charset=utf-8');
         $this->assertStringContainsString('ID,FECHA_HORA,USUARIO,MODULO,ACCION', $response->getContent());
     }
+
+    public function test_login_y_logout_registran_pistas_de_auditoria(): void
+    {
+        $usuario = User::factory()->create();
+
+        // Login
+        $this->post('/login', [
+            'email' => $usuario->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertDatabaseHas('auditorias', [
+            'modulo' => 'AUTH',
+            'accion' => 'LOGIN',
+            'id_registro_afectado' => $usuario->id_usuario,
+        ]);
+
+        // Logout
+        $this->actingAs($usuario)->post('/logout');
+
+        $this->assertDatabaseHas('auditorias', [
+            'modulo' => 'AUTH',
+            'accion' => 'LOGOUT',
+            'id_registro_afectado' => $usuario->id_usuario,
+        ]);
+    }
+
+    public function test_login_fallido_registra_pista_de_auditoria(): void
+    {
+        $this->post('/login', [
+            'email' => 'no_existe@test.com',
+            'password' => 'clave_invalida',
+        ]);
+
+        $this->assertDatabaseHas('auditorias', [
+            'modulo' => 'AUTH',
+            'accion' => 'LOGIN_FALLIDO',
+        ]);
+    }
+
+    public function test_se_puede_consultar_historial_por_entidad(): void
+    {
+        $this->actingAs($this->usuario);
+
+        $cliente = ClientesModel::create([
+            'identificacion' => 'V-88889999',
+            'nombre' => 'Cliente Historial Test',
+            'limite_credito' => 500.00,
+            'saldo_pendiente' => 0.00,
+        ]);
+
+        $cliente->nombre = 'Cliente Historial Modificado';
+        $cliente->save();
+
+        $response = $this->getJson("/auditorias/entidad/clientes/{$cliente->id_cliente}");
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'tabla',
+            'id_registro',
+            'total_eventos',
+            'timeline' => [
+                '*' => ['id_auditoria', 'accion', 'modulo', 'usuario', 'fecha_hora', 'resumen', 'diff'],
+            ],
+        ]);
+        $this->assertEquals(2, $response->json('total_eventos'));
+    }
+
+    public function test_api_rest_auditorias_por_entidad_y_exportar(): void
+    {
+        $this->actingAs($this->usuario);
+
+        $cliente = ClientesModel::create([
+            'identificacion' => 'V-11112222',
+            'nombre' => 'Cliente API Test',
+            'limite_credito' => 100.00,
+            'saldo_pendiente' => 0.00,
+        ]);
+
+        $responseEntidad = $this->getJson("/api/v1/audits/entity/clientes/{$cliente->id_cliente}");
+        $responseEntidad->assertStatus(200);
+        $responseEntidad->assertJsonPath('tabla', 'clientes');
+
+        $responseExport = $this->get('/api/v1/audits/export');
+        $responseExport->assertStatus(200);
+        $this->assertStringContainsString('ID,FECHA_HORA', $responseExport->getContent());
+    }
 }

@@ -3,12 +3,14 @@ import { ref } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ModalDiffAuditoria from '@/Pages/Auditorias/Partials/ModalDiffAuditoria.vue';
+import ModalHistorialEntidad from '@/Pages/Auditorias/Partials/ModalHistorialEntidad.vue';
 import axios from 'axios';
 
 const props = defineProps({
     auditorias: Object,
     kpis: Object,
     usuarios: Array,
+    tablas: Array,
     modulos: Array,
     acciones: Array,
     filtros: Object,
@@ -23,7 +25,8 @@ const idUsuario = ref(props.filtros?.id_usuario || '');
 const fechaDesde = ref(props.filtros?.fecha_desde || '');
 const fechaHasta = ref(props.filtros?.fecha_hasta || '');
 
-const AplicarFiltros = () => {
+const AplicarFiltros = () =>
+{
     router.get(route('auditorias.index'), {
         buscar: buscar.value || undefined,
         modulo: modulo.value || undefined,
@@ -38,7 +41,8 @@ const AplicarFiltros = () => {
     });
 };
 
-const LimpiarFiltros = () => {
+const LimpiarFiltros = () =>
+{
     buscar.value = '';
     modulo.value = '';
     accion.value = '';
@@ -49,42 +53,108 @@ const LimpiarFiltros = () => {
     AplicarFiltros();
 };
 
+const FiltrarPorAccion = (NuevaAccion) =>
+{
+    accion.value = NuevaAccion;
+    AplicarFiltros();
+};
+
+const FiltrarHoy = () =>
+{
+    const hoy = new Date().toISOString().split('T')[0];
+    fechaDesde.value = hoy;
+    fechaHasta.value = hoy;
+    AplicarFiltros();
+};
+
 // Modal Diff
 const modalDiffAbierto = ref(false);
 const auditoriaSeleccionada = ref(null);
 const diffSeleccionado = ref([]);
 const cargandoDiff = ref(false);
 
-const AbrirDiff = async (auditoria) => {
+const AbrirDiff = async (auditoria) =>
+{
     auditoriaSeleccionada.value = auditoria;
     cargandoDiff.value = true;
     modalDiffAbierto.value = true;
     diffSeleccionado.value = [];
 
-    try {
+    try
+    {
         const res = await axios.get(route('auditorias.show', auditoria.id_auditoria));
         diffSeleccionado.value = res.data.diff;
-    } catch (e) {
+    }
+    catch (e)
+    {
         console.error('Error al obtener diff:', e);
-    } finally {
+    }
+    finally
+    {
         cargandoDiff.value = false;
     }
 };
 
-const BadgeAccion = (acc) => {
-    switch (acc) {
+// Modal Historial de Entidad (Timeline)
+const modalHistorialAbierto = ref(false);
+const tablaHistorial = ref('');
+const idRegistroHistorial = ref(null);
+const historialData = ref(null);
+const cargandoHistorial = ref(false);
+
+const AbrirHistorialEntidad = async (tabla, idRegistro) =>
+{
+    if (!tabla || !idRegistro)
+    {
+        return;
+    }
+
+    tablaHistorial.value = tabla;
+    idRegistroHistorial.value = idRegistro;
+    cargandoHistorial.value = true;
+    modalHistorialAbierto.value = true;
+    historialData.value = null;
+
+    try
+    {
+        const res = await axios.get(route('auditorias.entidad', {
+            tabla: tabla,
+            id_registro: idRegistro,
+        }));
+        historialData.value = res.data;
+    }
+    catch (e)
+    {
+        console.error('Error al cargar historial de entidad:', e);
+    }
+    finally
+    {
+        cargandoHistorial.value = false;
+    }
+};
+
+const BadgeAccion = (acc) =>
+{
+    switch (acc)
+    {
         case 'CREAR':
-            return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300';
+            return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700';
         case 'ACTUALIZAR':
-            return 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300';
+            return 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-300 dark:border-blue-700';
         case 'ELIMINAR':
-            return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300';
+            return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300 border border-red-300 dark:border-red-700';
         case 'ANULAR':
-            return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300';
+            return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-300 dark:border-amber-700';
         case 'APLICAR':
-            return 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300';
+            return 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 border border-purple-300 dark:border-purple-700';
+        case 'LOGIN':
+            return 'bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300 border border-teal-300 dark:border-teal-700';
+        case 'LOGOUT':
+            return 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600';
+        case 'LOGIN_FALLIDO':
+            return 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300 border border-rose-300 dark:border-rose-700';
         default:
-            return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+            return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600';
     }
 };
 </script>
@@ -108,51 +178,75 @@ const BadgeAccion = (acc) => {
                 <div class="flex items-center gap-2">
                     <a
                         :href="route('auditorias.exportar', filtros)"
-                        class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm transition"
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-sm transition"
                     >
                         <span>📥</span> Exportar Log a CSV
                     </a>
                 </div>
             </div>
 
-            <!-- Tarjetas de Métricas de Auditoría -->
+            <!-- Tarjetas de Métricas de Auditoría (Interactivas) -->
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm">
+                <div
+                    @click="LimpiarFiltros"
+                    class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm hover:border-indigo-400 dark:hover:border-indigo-500 cursor-pointer transition"
+                    title="Haga clic para ver todos los eventos"
+                >
                     <span class="text-[10px] uppercase font-semibold text-gray-400">Total Eventos</span>
                     <div class="text-xl font-bold text-gray-900 dark:text-white mt-1 font-mono">
                         {{ kpis.total_general }}
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm">
+                <div
+                    @click="FiltrarHoy"
+                    class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm hover:border-indigo-400 dark:hover:border-indigo-500 cursor-pointer transition"
+                    title="Haga clic para filtrar eventos de hoy"
+                >
                     <span class="text-[10px] uppercase font-semibold text-gray-400">Registrados Hoy</span>
                     <div class="text-xl font-bold text-indigo-600 dark:text-indigo-400 mt-1 font-mono">
                         {{ kpis.total_hoy }}
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm">
+                <div
+                    @click="FiltrarPorAccion('CREAR')"
+                    class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm hover:border-emerald-400 cursor-pointer transition"
+                    title="Haga clic para filtrar creaciones"
+                >
                     <span class="text-[10px] uppercase font-semibold text-gray-400">Creaciones</span>
                     <div class="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 font-mono">
                         {{ kpis.total_creaciones }}
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm">
+                <div
+                    @click="FiltrarPorAccion('ACTUALIZAR')"
+                    class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm hover:border-blue-400 cursor-pointer transition"
+                    title="Haga clic para filtrar actualizaciones"
+                >
                     <span class="text-[10px] uppercase font-semibold text-gray-400">Actualizaciones</span>
                     <div class="text-xl font-bold text-blue-600 dark:text-blue-400 mt-1 font-mono">
                         {{ kpis.total_actualizaciones }}
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm">
+                <div
+                    @click="FiltrarPorAccion('ELIMINAR')"
+                    class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm hover:border-red-400 cursor-pointer transition"
+                    title="Haga clic para filtrar eliminaciones"
+                >
                     <span class="text-[10px] uppercase font-semibold text-gray-400">Eliminaciones</span>
                     <div class="text-xl font-bold text-red-600 dark:text-red-400 mt-1 font-mono">
                         {{ kpis.total_eliminaciones }}
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm">
+                <div
+                    @click="FiltrarPorAccion('ANULAR')"
+                    class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm hover:border-amber-400 cursor-pointer transition"
+                    title="Haga clic para filtrar anulaciones"
+                >
                     <span class="text-[10px] uppercase font-semibold text-gray-400">Anulaciones</span>
                     <div class="text-xl font-bold text-amber-600 dark:text-amber-400 mt-1 font-mono">
                         {{ kpis.total_anulaciones }}
@@ -162,7 +256,7 @@ const BadgeAccion = (acc) => {
 
             <!-- Filtros de Búsqueda Forense -->
             <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm space-y-3">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
                     <div class="lg:col-span-2">
                         <label class="block text-[10px] font-semibold text-gray-500 uppercase mb-1">Buscar</label>
                         <input
@@ -181,7 +275,7 @@ const BadgeAccion = (acc) => {
                             @change="AplicarFiltros"
                             class="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                         >
-                            <option value="">Todos los módulos</option>
+                            <option value="">Todos</option>
                             <option v-for="m in modulos" :key="m" :value="m">{{ m }}</option>
                         </select>
                     </div>
@@ -193,8 +287,20 @@ const BadgeAccion = (acc) => {
                             @change="AplicarFiltros"
                             class="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                         >
-                            <option value="">Todas las acciones</option>
+                            <option value="">Todas</option>
                             <option v-for="a in acciones" :key="a" :value="a">{{ a }}</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-500 uppercase mb-1">Tabla Afectada</label>
+                        <select
+                            v-model="tablaAfectada"
+                            @change="AplicarFiltros"
+                            class="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white font-mono"
+                        >
+                            <option value="">Todas las tablas</option>
+                            <option v-for="t in tablas" :key="t" :value="t">{{ t }}</option>
                         </select>
                     </div>
 
@@ -207,29 +313,48 @@ const BadgeAccion = (acc) => {
                         >
                             <option value="">Todos los usuarios</option>
                             <option v-for="u in usuarios" :key="u.id_usuario" :value="u.id_usuario">
-                                {{ u.name }}
+                                {{ u.nombre || u.name }}
                             </option>
                         </select>
                     </div>
 
-                    <div>
-                        <label class="block text-[10px] font-semibold text-gray-500 uppercase mb-1">Desde</label>
-                        <input
-                            v-model="fechaDesde"
-                            @change="AplicarFiltros"
-                            type="date"
-                            class="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                        />
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <div>
+                            <label class="block text-[10px] font-semibold text-gray-500 uppercase mb-1">Desde</label>
+                            <input
+                                v-model="fechaDesde"
+                                @change="AplicarFiltros"
+                                type="date"
+                                class="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-1.5"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold text-gray-500 uppercase mb-1">Hasta</label>
+                            <input
+                                v-model="fechaHasta"
+                                @change="AplicarFiltros"
+                                type="date"
+                                class="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-1.5"
+                            />
+                        </div>
                     </div>
                 </div>
 
-                <div class="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-gray-700">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
                     <span class="text-xs text-gray-400">
                         Mostrando registros ordenados cronológicamente
                     </span>
 
-                    <div class="flex gap-2">
+                    <div class="flex items-center gap-2">
                         <button
+                            type="button"
+                            @click="FiltrarHoy"
+                            class="px-2.5 py-1 text-xs font-semibold bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition"
+                        >
+                            📅 Solo Hoy
+                        </button>
+                        <button
+                            type="button"
                             @click="AplicarFiltros"
                             class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg transition"
                         >
@@ -237,6 +362,7 @@ const BadgeAccion = (acc) => {
                         </button>
                         <button
                             v-if="buscar || modulo || accion || tablaAfectada || idUsuario || fechaDesde || fechaHasta"
+                            type="button"
                             @click="LimpiarFiltros"
                             class="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
                         >
@@ -257,7 +383,7 @@ const BadgeAccion = (acc) => {
                                 <th class="px-5 py-3">Módulo / Tabla</th>
                                 <th class="px-5 py-3 text-center">Acción</th>
                                 <th class="px-5 py-3">Detalle / Resumen</th>
-                                <th class="px-5 py-3 text-right">Diferencial</th>
+                                <th class="px-5 py-3 text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -277,7 +403,7 @@ const BadgeAccion = (acc) => {
 
                                 <td class="px-5 py-3">
                                     <div class="font-semibold text-gray-900 dark:text-white">
-                                        {{ a.usuario?.name || 'Sistema' }}
+                                        {{ a.usuario?.nombre || a.usuario?.name || 'Sistema' }}
                                     </div>
                                     <div class="text-[10px] font-mono text-indigo-600 dark:text-indigo-400">
                                         {{ a.ip_direccion || '127.0.0.1' }}
@@ -288,8 +414,18 @@ const BadgeAccion = (acc) => {
                                     <div class="font-bold text-gray-800 dark:text-gray-200">
                                         {{ a.modulo }}
                                     </div>
-                                    <div class="text-[10px] text-gray-400 font-mono">
-                                        {{ a.tabla_afectada }} (ID: {{ a.id_registro_afectado || '-' }})
+                                    <div class="text-[10px] text-gray-400 font-mono flex items-center gap-1">
+                                        <span>{{ a.tabla_afectada }}</span>
+                                        <button
+                                            v-if="a.id_registro_afectado"
+                                            type="button"
+                                            @click="AbrirHistorialEntidad(a.tabla_afectada, a.id_registro_afectado)"
+                                            class="text-indigo-600 dark:text-indigo-400 hover:underline font-bold"
+                                            :title="'Ver historial completo de ' + a.tabla_afectada + ' #' + a.id_registro_afectado"
+                                        >
+                                            (#{{ a.id_registro_afectado }}) 📜
+                                        </button>
+                                        <span v-else>(-</span>
                                     </div>
                                 </td>
 
@@ -306,12 +442,24 @@ const BadgeAccion = (acc) => {
                                 </td>
 
                                 <td class="px-5 py-3 text-right whitespace-nowrap">
-                                    <button
-                                        @click="AbrirDiff(a)"
-                                        class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/60 dark:text-indigo-300 rounded-lg text-xs font-semibold inline-flex items-center gap-1 transition"
-                                    >
-                                        🔍 Ver Diff
-                                    </button>
+                                    <div class="flex items-center justify-end gap-1.5">
+                                        <button
+                                            v-if="a.id_registro_afectado"
+                                            type="button"
+                                            @click="AbrirHistorialEntidad(a.tabla_afectada, a.id_registro_afectado)"
+                                            class="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 rounded-lg text-xs font-semibold inline-flex items-center gap-1 transition"
+                                            title="Historial de la entidad"
+                                        >
+                                            📜 Timeline
+                                        </button>
+                                        <button
+                                            type="button"
+                                            @click="AbrirDiff(a)"
+                                            class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/60 dark:text-indigo-300 rounded-lg text-xs font-semibold inline-flex items-center gap-1 transition"
+                                        >
+                                            🔍 Ver Diff
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
 
@@ -353,6 +501,16 @@ const BadgeAccion = (acc) => {
                 :auditoria="auditoriaSeleccionada"
                 :diff="diffSeleccionado"
                 @cerrar="modalDiffAbierto = false"
+            />
+
+            <!-- MODAL HISTORIAL DE ENTIDAD (TIMELINE) -->
+            <ModalHistorialEntidad
+                v-if="modalHistorialAbierto"
+                :tabla="tablaHistorial"
+                :idRegistro="idRegistroHistorial"
+                :historial="historialData"
+                :cargando="cargandoHistorial"
+                @cerrar="modalHistorialAbierto = false"
             />
 
         </div>

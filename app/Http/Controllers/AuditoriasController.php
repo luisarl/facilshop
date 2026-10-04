@@ -36,6 +36,7 @@ class AuditoriasController extends Controller
             'auditorias' => $resultado['auditorias'],
             'kpis' => $resultado['kpis'],
             'usuarios' => $resultado['usuarios'],
+            'tablas' => $resultado['tablas'],
             'modulos' => $resultado['modulos'],
             'acciones' => $resultado['acciones'],
             'filtros' => $filtros,
@@ -52,6 +53,19 @@ class AuditoriasController extends Controller
         catch (Exception $e)
         {
             return response()->json(['error' => $e->getMessage()], 404);
+        }
+    }
+
+    public function PorEntidad(string $tabla, int $id_registro): JsonResponse
+    {
+        try
+        {
+            $historial = $this->auditoriaService->ObtenerHistorialEntidad($tabla, $id_registro);
+            return response()->json($historial);
+        }
+        catch (Exception $e)
+        {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
@@ -91,5 +105,10 @@ class AuditoriasController extends Controller
 
         $resultado = $this->auditoriaService->ListarAuditorias($filtros, 50);
         return response()->json($resultado);
+    }
+
+    public function ApiPorEntidad(string $tabla, int $id_registro): JsonResponse
+    {
+        return $this->PorEntidad($tabla, $id_registro);
     }
 }

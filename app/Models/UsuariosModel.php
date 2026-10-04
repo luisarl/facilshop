@@ -31,6 +31,11 @@ class UsuariosModel extends Authenticatable
         'remember_token',
     ];
 
+    protected $appends = [
+        'name',
+        'id',
+    ];
+
     protected function casts(): array
     {
         return [

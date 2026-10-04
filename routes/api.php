@@ -47,7 +47,9 @@ Route::prefix('v1')->group(function ()
 
     // Pistas de Auditoría
     Route::get('/audits', [App\Http\Controllers\AuditoriasController::class, 'ApiIndex']);
+    Route::get('/audits/export', [App\Http\Controllers\AuditoriasController::class, 'Exportar']);
     Route::get('/audits/{id_auditoria}', [App\Http\Controllers\AuditoriasController::class, 'Show']);
+    Route::get('/audits/entity/{tabla}/{id_registro}', [App\Http\Controllers\AuditoriasController::class, 'ApiPorEntidad']);
 
     // Dashboard Analytics
     Route::get('/reports/dashboard', [App\Http\Controllers\DashboardController::class, 'ApiMetrics']);

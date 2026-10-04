@@ -82,6 +82,7 @@ Route::middleware(['auth', 'verified'])->group(function ()
     // Pistas de Auditoría (Audit Trail)
     Route::get('/auditorias', [App\Http\Controllers\AuditoriasController::class, 'Index'])->name('auditorias.index');
     Route::get('/auditorias/{id_auditoria}', [App\Http\Controllers\AuditoriasController::class, 'Show'])->name('auditorias.show');
+    Route::get('/auditorias/entidad/{tabla}/{id_registro}', [App\Http\Controllers\AuditoriasController::class, 'PorEntidad'])->name('auditorias.entidad');
     Route::get('/auditorias/exportar/csv', [App\Http\Controllers\AuditoriasController::class, 'Exportar'])->name('auditorias.exportar');
 
     // Centro de Configuración

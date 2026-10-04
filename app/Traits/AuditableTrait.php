@@ -12,7 +12,13 @@ trait AuditableTrait
     {
         static::created(function ($model)
         {
-            $model->RegistrarAuditoria('CREAR', null, $model->getAttributes());
+            $accion = 'CREAR';
+            if (isset($model->accionAuditoriaPersonalizada))
+            {
+                $accion = $model->accionAuditoriaPersonalizada;
+            }
+
+            $model->RegistrarAuditoria($accion, null, $model->getAttributes());
         });
 
         static::updated(function ($model)
@@ -20,18 +26,53 @@ trait AuditableTrait
             $ValoresAnteriores = array_intersect_key($model->getOriginal(), $model->getDirty());
             $ValoresNuevos = $model->getDirty();
 
-            $model->RegistrarAuditoria('ACTUALIZAR', $ValoresAnteriores, $ValoresNuevos);
+            $accion = 'ACTUALIZAR';
+            if (isset($model->accionAuditoriaPersonalizada))
+            {
+                $accion = $model->accionAuditoriaPersonalizada;
+            }
+            elseif ($model->isDirty('estado'))
+            {
+                $EstadoNuevo = strtoupper((string) $model->estado);
+                if (in_array($EstadoNuevo, ['ANULADA', 'ANULADO']))
+                {
+                    $accion = 'ANULAR';
+                }
+                elseif (in_array($EstadoNuevo, ['APLICADO', 'APLICADA']))
+                {
+                    $accion = 'APLICAR';
+                }
+            }
+
+            $model->RegistrarAuditoria($accion, $ValoresAnteriores, $ValoresNuevos);
         });
 
         static::deleted(function ($model)
         {
-            $model->RegistrarAuditoria('ELIMINAR', $model->getOriginal(), null);
+            $accion = 'ELIMINAR';
+            if (isset($model->accionAuditoriaPersonalizada))
+            {
+                $accion = $model->accionAuditoriaPersonalizada;
+            }
+
+            $model->RegistrarAuditoria($accion, $model->getOriginal(), null);
         });
     }
 
     public function RegistrarAuditoria(string $accion, ?array $ValoresAnteriores, ?array $ValoresNuevos): void
     {
-        $idUsuario = Auth::id();
+        $IdUsuario = Auth::id();
+
+        // Si se elimina un usuario o si el usuario autenticado es el registro que se elimina, usar null para evitar violación de clave foránea
+        if ($this->getTable() === 'usuarios' && $accion === 'ELIMINAR')
+        {
+            $IdUsuario = null;
+        }
+        elseif ($IdUsuario === null && isset($this->id_usuario) && $this->getTable() !== 'usuarios')
+        {
+            $IdUsuario = $this->id_usuario;
+        }
+
         $modulo = property_exists($this, 'auditModulo') ? $this->auditModulo : strtoupper($this->getTable());
 
         $CamposOcultos = ['password', 'remember_token', 'token', 'api_secret'];
@@ -52,7 +93,7 @@ trait AuditableTrait
         }
 
         AuditoriasModel::create([
-            'id_usuario' => $idUsuario,
+            'id_usuario' => $IdUsuario,
             'modulo' => $modulo,
             'accion' => $accion,
             'tabla_afectada' => $this->getTable(),

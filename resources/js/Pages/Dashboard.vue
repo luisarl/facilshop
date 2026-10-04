@@ -15,8 +15,10 @@ const props = defineProps({
 
 const tasaVes = computed(() => Number(props.kpis?.tasa_ves || 1.0));
 
-const BadgeAccion = (acc) => {
-    switch (acc) {
+const BadgeAccion = (acc) =>
+{
+    switch (acc)
+    {
         case 'CREAR':
             return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300';
         case 'ACTUALIZAR':
@@ -25,6 +27,14 @@ const BadgeAccion = (acc) => {
             return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300';
         case 'ANULAR':
             return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300';
+        case 'APLICAR':
+            return 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300';
+        case 'LOGIN':
+            return 'bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300';
+        case 'LOGOUT':
+            return 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300';
+        case 'LOGIN_FALLIDO':
+            return 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300';
         default:
             return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
     }

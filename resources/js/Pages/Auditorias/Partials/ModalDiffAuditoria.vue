@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 
 const props = defineProps({
     auditoria: Object,
@@ -8,27 +8,100 @@ const props = defineProps({
 
 const emit = defineEmits(['cerrar']);
 
-const FormatearValor = (val) => {
-    if (val === null || val === undefined) return '<null>';
-    if (typeof val === 'boolean') return val ? 'true (VERDADERO)' : 'false (FALSO)';
-    if (typeof val === 'object') return JSON.stringify(val, null, 2);
+const busquedaCampo = ref('');
+const soloModificados = ref(false);
+const copiadoExitoso = ref(false);
+
+const FormatearValor = (val) =>
+{
+    if (val === null || val === undefined)
+    {
+        return '<vacio>';
+    }
+    if (typeof val === 'boolean')
+    {
+        return val ? 'true (VERDADERO)' : 'false (FALSO)';
+    }
+    if (typeof val === 'object')
+    {
+        return JSON.stringify(val, null, 2);
+    }
     return String(val);
 };
 
-const badgeAccion = computed(() => {
-    switch (props.auditoria?.accion) {
+const badgeAccion = computed(() =>
+{
+    switch (props.auditoria?.accion)
+    {
         case 'CREAR':
-            return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300';
+            return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700';
         case 'ACTUALIZAR':
-            return 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300';
+            return 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border-blue-300 dark:border-blue-700';
         case 'ELIMINAR':
-            return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300';
+            return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300 border-red-300 dark:border-red-700';
         case 'ANULAR':
-            return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300';
+            return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border-amber-300 dark:border-amber-700';
+        case 'APLICAR':
+            return 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 border-purple-300 dark:border-purple-700';
+        case 'LOGIN':
+            return 'bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300 border-teal-300 dark:border-teal-700';
+        case 'LOGOUT':
+            return 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600';
+        case 'LOGIN_FALLIDO':
+            return 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300 border-rose-300 dark:border-rose-700';
         default:
-            return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+            return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600';
     }
 });
+
+const DiffFiltrado = computed(() =>
+{
+    if (!props.diff)
+    {
+        return [];
+    }
+
+    return props.diff.filter(d =>
+    {
+        const CoincideBusqueda = !busquedaCampo.value || d.campo.toLowerCase().includes(busquedaCampo.value.toLowerCase());
+        const CoincideModificado = !soloModificados.value || d.tipo_cambio !== 'SIN_CAMBIO';
+        return CoincideBusqueda && CoincideModificado;
+    });
+});
+
+const EsEventoAuth = computed(() =>
+{
+    return ['LOGIN', 'LOGOUT', 'LOGIN_FALLIDO'].includes(props.auditoria?.accion);
+});
+
+const CopiarSnapshot = async () =>
+{
+    const snapshot = {
+        id_auditoria: props.auditoria?.id_auditoria,
+        accion: props.auditoria?.accion,
+        modulo: props.auditoria?.modulo,
+        tabla: props.auditoria?.tabla_afectada,
+        registro_id: props.auditoria?.id_registro_afectado,
+        usuario: props.auditoria?.usuario?.nombre || props.auditoria?.usuario?.name || 'Sistema',
+        fecha: props.auditoria?.created_at,
+        valores_anteriores: props.auditoria?.valores_anteriores,
+        valores_nuevos: props.auditoria?.valores_nuevos,
+    };
+
+    try
+    {
+        await navigator.clipboard.writeText(JSON.stringify(snapshot, null, 2));
+        copiadoExitoso.value = true;
+        setTimeout(() =>
+        {
+            copiadoExitoso.value = false;
+        }, 2000);
+    }
+    catch (e)
+    {
+        console.error('Error al copiar al portapapeles', e);
+    }
+};
 </script>
 
 <template>
@@ -42,7 +115,7 @@ const badgeAccion = computed(() => {
                     <div>
                         <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
                             Pista de Auditoría #{{ auditoria.id_auditoria }}
-                            <span :class="['px-2.5 py-0.5 rounded-full text-xs font-bold font-mono', badgeAccion]">
+                            <span :class="['px-2.5 py-0.5 rounded-full text-xs font-bold font-mono border', badgeAccion]">
                                 {{ auditoria.accion }}
                             </span>
                         </h3>
@@ -53,7 +126,7 @@ const badgeAccion = computed(() => {
                 </div>
                 <button
                     @click="emit('cerrar')"
-                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg px-2"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg px-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
                 >
                     ✕
                 </button>
@@ -64,7 +137,7 @@ const badgeAccion = computed(() => {
                 <div>
                     <span class="text-gray-400 uppercase text-[10px] font-bold tracking-wider">Usuario</span>
                     <div class="font-semibold text-gray-800 dark:text-gray-200">
-                        {{ auditoria.usuario?.name || 'Sistema / Cron' }}
+                        {{ auditoria.usuario?.nombre || auditoria.usuario?.name || 'Sistema / Cron' }}
                     </div>
                     <div class="text-[10px] text-gray-400">{{ auditoria.usuario?.email || '' }}</div>
                 </div>
@@ -100,24 +173,80 @@ const badgeAccion = computed(() => {
                 </div>
             </div>
 
-            <!-- Visor de Diferencias (Diff Viewer) -->
-            <div class="p-6 overflow-y-auto space-y-4 flex-1">
-                <div class="flex justify-between items-center">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                        Diferencial de Atributos (Snapshot Previo vs Snapshot Posterior)
-                    </h4>
-                    <div class="flex items-center gap-3 text-[11px]">
-                        <span class="flex items-center gap-1 text-red-600 font-semibold">
-                            <span class="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span> Valor Previo (Rojo)
-                        </span>
-                        <span class="flex items-center gap-1 text-emerald-600 font-semibold">
-                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Valor Nuevo (Verde)
-                        </span>
+            <!-- Vista especial para eventos de Autenticación -->
+            <div v-if="EsEventoAuth" class="p-6 overflow-y-auto space-y-4 flex-1">
+                <div class="bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800/60 rounded-2xl p-5 space-y-3">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">{{ auditoria.accion === 'LOGIN' ? '🔓' : (auditoria.accion === 'LOGOUT' ? '🔒' : '⚠️') }}</span>
+                        <div>
+                            <h4 class="text-sm font-bold text-gray-900 dark:text-white">
+                                Evento de Autenticación de Usuario
+                            </h4>
+                            <p class="text-xs text-gray-600 dark:text-gray-300">
+                                {{ auditoria.resumen_cambios }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs">
+                        <div class="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-200 dark:border-gray-700 space-y-1">
+                            <span class="text-[10px] uppercase font-bold text-gray-400">Atributos del Evento</span>
+                            <div v-for="(v, k) in auditoria.valores_nuevos" :key="k" class="font-mono text-gray-700 dark:text-gray-300">
+                                <strong>{{ k }}:</strong> {{ FormatearValor(v) }}
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-200 dark:border-gray-700 space-y-1">
+                            <span class="text-[10px] uppercase font-bold text-gray-400">Origen de Conexión</span>
+                            <div class="font-mono text-gray-700 dark:text-gray-300">
+                                <strong>IP:</strong> {{ auditoria.ip_direccion || '127.0.0.1' }}
+                            </div>
+                            <div class="font-mono text-gray-700 dark:text-gray-300 break-all">
+                                <strong>Dispositivo:</strong> {{ auditoria.user_agent || 'N/A' }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visor de Diferencias Estándar (Diff Viewer) -->
+            <div v-else class="p-6 overflow-y-auto space-y-4 flex-1">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                            Diferencial de Atributos (Snapshot Previo vs Snapshot Posterior)
+                        </h4>
+                        <div class="flex items-center gap-3 text-[11px] mt-1">
+                            <span class="flex items-center gap-1 text-red-600 font-semibold">
+                                <span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span> Previo (Rojo)
+                            </span>
+                            <span class="flex items-center gap-1 text-emerald-600 font-semibold">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> Nuevo (Verde)
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Buscador rápido de campos y filtro de cambios -->
+                    <div class="flex items-center gap-2">
+                        <input
+                            v-model="busquedaCampo"
+                            type="text"
+                            placeholder="Buscar campo..."
+                            class="text-xs px-2.5 py-1 rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        />
+                        <label class="inline-flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 cursor-pointer select-none">
+                            <input
+                                v-model="soloModificados"
+                                type="checkbox"
+                                class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 text-xs"
+                            />
+                            <span>Solo cambios</span>
+                        </label>
                     </div>
                 </div>
 
-                <div v-if="!diff || diff.length === 0" class="p-8 text-center text-gray-400 text-xs bg-gray-50 dark:bg-gray-900/40 rounded-xl">
-                    No se detectaron diferencias directas en los snapshots guardados.
+                <div v-if="!DiffFiltrado || DiffFiltrado.length === 0" class="p-8 text-center text-gray-400 text-xs bg-gray-50 dark:bg-gray-900/40 rounded-xl">
+                    No se encontraron atributos coincidentes con los filtros seleccionados.
                 </div>
 
                 <div v-else class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
@@ -132,7 +261,7 @@ const badgeAccion = computed(() => {
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-700 font-mono">
                             <tr
-                                v-for="d in diff"
+                                v-for="d in DiffFiltrado"
                                 :key="d.campo"
                                 :class="[
                                     'transition',
@@ -207,7 +336,16 @@ const badgeAccion = computed(() => {
             </div>
 
             <!-- Pie Modal -->
-            <div class="px-6 py-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+            <div class="px-6 py-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                <button
+                    type="button"
+                    @click="CopiarSnapshot"
+                    class="px-3 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 inline-flex items-center gap-1.5 transition"
+                >
+                    <span>📋</span>
+                    <span>{{ copiadoExitoso ? '¡Copiado al Portapapeles!' : 'Copiar Snapshot JSON' }}</span>
+                </button>
+
                 <button
                     @click="emit('cerrar')"
                     class="px-4 py-1.5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-xs font-semibold rounded-lg transition"
