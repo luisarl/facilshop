@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { FormatearFechaHora } from '@/Utils/FechaHora';
+import { FormatearNumero, FormatearCantidad } from '@/Utils/FormatoNumero';
 import QRCode from 'qrcode';
 
 const props = defineProps({
@@ -123,12 +124,12 @@ const Imprimir = () => {
                                     <div class="text-[10px] text-gray-400 font-mono">SKU: {{ d.producto?.sku }}</div>
                                 </td>
                                 <td class="py-2.5 text-center text-gray-500 uppercase">{{ d.producto?.unidad?.abreviatura || 'UND' }}</td>
-                                <td class="py-2.5 text-center font-mono font-bold">{{ d.cantidad }}</td>
-                                <td class="py-2.5 text-right font-mono">${{ Number(d.precio_unitario).toFixed(2) }}</td>
+                                <td class="py-2.5 text-center font-mono font-bold">{{ FormatearCantidad(d.cantidad) }}</td>
+                                <td class="py-2.5 text-right font-mono">${{ FormatearNumero(d.precio_unitario) }}</td>
                                 <td class="py-2.5 text-right font-mono text-emerald-600">
-                                    {{ Number(d.descuento) > 0 ? `-$${Number(d.descuento).toFixed(2)}` : '-' }}
+                                    {{ Number(d.descuento) > 0 ? `-$${FormatearNumero(d.descuento)}` : '-' }}
                                 </td>
-                                <td class="py-2.5 text-right font-mono font-bold">${{ Number(d.subtotal).toFixed(2) }}</td>
+                                <td class="py-2.5 text-right font-mono font-bold">${{ FormatearNumero(d.subtotal) }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -153,23 +154,23 @@ const Imprimir = () => {
                     <div class="w-full sm:w-72 space-y-1.5 text-xs text-right font-mono">
                         <div class="flex justify-between text-gray-600">
                             <span>Subtotal:</span>
-                            <span>${{ Number(venta.subtotal).toFixed(2) }}</span>
+                            <span>${{ FormatearNumero(venta.subtotal) }}</span>
                         </div>
                         <div v-if="Number(venta.descuento_total) > 0" class="flex justify-between text-emerald-600 font-semibold">
                             <span>Descuento Total:</span>
-                            <span>-${{ Number(venta.descuento_total).toFixed(2) }}</span>
+                            <span>-${{ FormatearNumero(venta.descuento_total) }}</span>
                         </div>
                         <div class="flex justify-between text-lg font-black text-gray-900 border-t-2 border-gray-200 pt-1.5">
                             <span>TOTAL USD:</span>
-                            <span>${{ Number(venta.total).toFixed(2) }}</span>
+                            <span>${{ FormatearNumero(venta.total) }}</span>
                         </div>
                         <div class="flex justify-between text-xs text-gray-500">
                             <span>Tasa Referencial BCV:</span>
-                            <span>Bs. {{ Number(tasa_ves).toFixed(2) }}</span>
+                            <span>Bs. {{ FormatearNumero(tasa_ves) }}</span>
                         </div>
                         <div class="flex justify-between text-sm font-bold text-indigo-700">
                             <span>TOTAL VES:</span>
-                            <span>Bs. {{ Number(total_ves).toLocaleString('es-VE', { minimumFractionDigits: 2 }) }}</span>
+                            <span>Bs. {{ FormatearNumero(total_ves) }}</span>
                         </div>
                     </div>
                 </div>
@@ -188,9 +189,9 @@ const Imprimir = () => {
                                 <span v-if="p.referencia" class="text-[10px] text-gray-500 font-mono block">Ref: {{ p.referencia }}</span>
                             </div>
                             <div class="text-right font-mono">
-                                <span class="font-bold">${{ Number(p.monto_base).toFixed(2) }}</span>
+                                <span class="font-bold">${{ FormatearNumero(p.monto_base) }}</span>
                                 <span v-if="p.moneda?.codigo !== 'USD'" class="text-[10px] text-gray-500 block">
-                                    {{ p.moneda?.simbolo }}{{ Number(p.monto).toFixed(2) }}
+                                    {{ p.moneda?.simbolo }}{{ FormatearNumero(p.monto) }}
                                 </span>
                             </div>
                         </div>
@@ -210,19 +211,19 @@ const Imprimir = () => {
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
                         <div class="p-2 bg-white rounded-lg border border-amber-100">
                             <span class="text-[9px] uppercase font-semibold text-amber-600 block">Inicial Tienda</span>
-                            <span class="font-bold text-amber-900 font-mono">${{ Number(venta.cashea_transaccion.monto_inicial).toFixed(2) }}</span>
+                            <span class="font-bold text-amber-900 font-mono">${{ FormatearNumero(venta.cashea_transaccion.monto_inicial) }}</span>
                         </div>
                         <div class="p-2 bg-white rounded-lg border border-amber-100">
                             <span class="text-[9px] uppercase font-semibold text-amber-600 block">Saldo Financiado</span>
-                            <span class="font-bold text-amber-900 font-mono">${{ Number(venta.cashea_transaccion.monto_financiado).toFixed(2) }}</span>
+                            <span class="font-bold text-amber-900 font-mono">${{ FormatearNumero(venta.cashea_transaccion.monto_financiado) }}</span>
                         </div>
                         <div class="p-2 bg-white rounded-lg border border-amber-100">
                             <span class="text-[9px] uppercase font-semibold text-amber-600 block">Cuotas en App</span>
-                            <span class="font-bold text-amber-900 font-mono">{{ venta.cashea_transaccion.numero_cuotas }} quincenales</span>
+                            <span class="font-bold text-amber-900 font-mono">{{ FormatearCantidad(venta.cashea_transaccion.numero_cuotas) }} quincenales</span>
                         </div>
                         <div class="p-2 bg-white rounded-lg border border-amber-100">
                             <span class="text-[9px] uppercase font-semibold text-amber-600 block">Monto por Cuota</span>
-                            <span class="font-bold text-amber-900 font-mono">${{ Number(venta.cashea_transaccion.monto_cuota).toFixed(2) }}</span>
+                            <span class="font-bold text-amber-900 font-mono">${{ FormatearNumero(venta.cashea_transaccion.monto_cuota) }}</span>
                         </div>
                     </div>
                 </div>

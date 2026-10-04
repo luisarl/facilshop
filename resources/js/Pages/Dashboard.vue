@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { FormatearFecha, FormatearFechaHora } from '@/Utils/FechaHora';
+import { FormatearNumero, FormatearCantidad } from '@/Utils/FormatoNumero';
 
 const props = defineProps({
     kpis: Object,
@@ -106,7 +107,7 @@ const BadgeAccion = (acc) =>
                         >
                             <span class="text-[10px] text-indigo-300 uppercase font-bold tracking-wider block">Tasa BCV Oficial</span>
                             <div class="flex items-center gap-1 justify-end font-mono">
-                                <span class="text-lg font-black text-emerald-400">Bs. {{ tasaVes.toFixed(2) }}</span>
+                                <span class="text-lg font-black text-emerald-400">Bs. {{ FormatearNumero(tasaVes) }}</span>
                                 <span class="text-xs text-indigo-300 group-hover:translate-x-0.5 transition">→</span>
                             </div>
                         </Link>
@@ -162,10 +163,10 @@ const BadgeAccion = (acc) =>
                         <div>
                             <span class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Ventas de Hoy</span>
                             <div class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white mt-1 font-mono tracking-tight">
-                                ${{ Number(kpis?.ventas_hoy_usd || 0).toFixed(2) }}
+                                ${{ FormatearNumero(kpis?.ventas_hoy_usd || 0) }}
                             </div>
                             <div class="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5 font-mono font-semibold">
-                                ≈ Bs. {{ Number(kpis?.ventas_hoy_ves || 0).toLocaleString('es-VE', { minimumFractionDigits: 2 }) }}
+                                ≈ Bs. {{ FormatearNumero(kpis?.ventas_hoy_ves || 0) }}
                             </div>
                         </div>
                         <div class="p-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-2xl text-xl shadow-xs group-hover:scale-110 transition transform">
@@ -173,7 +174,7 @@ const BadgeAccion = (acc) =>
                         </div>
                     </div>
                     <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700/60 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                        <span>{{ kpis?.conteo_ventas_hoy || 0 }} tickets emitidos</span>
+                        <span>{{ FormatearCantidad(kpis?.conteo_ventas_hoy || 0) }} tickets emitidos</span>
                         <Link :href="route('facturacion.index')" class="text-indigo-600 dark:text-indigo-400 font-bold hover:underline">Ver ventas →</Link>
                     </div>
                 </div>
@@ -184,10 +185,10 @@ const BadgeAccion = (acc) =>
                         <div>
                             <span class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Ventas del Mes</span>
                             <div class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white mt-1 font-mono tracking-tight">
-                                ${{ Number(kpis?.ventas_mes_usd || 0).toFixed(2) }}
+                                ${{ FormatearNumero(kpis?.ventas_mes_usd || 0) }}
                             </div>
                             <div class="text-xs text-indigo-600 dark:text-indigo-400 mt-0.5 font-mono font-semibold">
-                                ≈ Bs. {{ Number(kpis?.ventas_mes_ves || 0).toLocaleString('es-VE', { minimumFractionDigits: 2 }) }}
+                                ≈ Bs. {{ FormatearNumero(kpis?.ventas_mes_ves || 0) }}
                             </div>
                         </div>
                         <div class="p-3 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-2xl text-xl shadow-xs group-hover:scale-110 transition transform">
@@ -195,8 +196,8 @@ const BadgeAccion = (acc) =>
                         </div>
                     </div>
                     <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700/60 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                        <span>Ticket Prom: ${{ Number(kpis?.ticket_promedio_usd || 0).toFixed(2) }}</span>
-                        <span class="font-bold text-gray-700 dark:text-gray-300">{{ kpis?.conteo_ventas_mes || 0 }} ventas</span>
+                        <span>Ticket Prom: ${{ FormatearNumero(kpis?.ticket_promedio_usd || 0) }}</span>
+                        <span class="font-bold text-gray-700 dark:text-gray-300">{{ FormatearCantidad(kpis?.conteo_ventas_mes || 0) }} ventas</span>
                     </div>
                 </div>
 
@@ -206,10 +207,10 @@ const BadgeAccion = (acc) =>
                         <div>
                             <span class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Cartera por Cobrar</span>
                             <div class="text-2xl sm:text-3xl font-black text-rose-600 dark:text-rose-400 mt-1 font-mono tracking-tight">
-                                ${{ Number(kpis?.total_cartera_usd || 0).toFixed(2) }}
+                                ${{ FormatearNumero(kpis?.total_cartera_usd || 0) }}
                             </div>
                             <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-mono">
-                                ≈ Bs. {{ Number(kpis?.total_cartera_ves || 0).toLocaleString('es-VE', { minimumFractionDigits: 2 }) }}
+                                ≈ Bs. {{ FormatearNumero(kpis?.total_cartera_ves || 0) }}
                             </div>
                         </div>
                         <div class="p-3 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-2xl text-xl shadow-xs group-hover:scale-110 transition transform">
@@ -217,7 +218,7 @@ const BadgeAccion = (acc) =>
                         </div>
                     </div>
                     <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700/60 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                        <span>{{ kpis?.clientes_con_deuda || 0 }} clientes con deuda</span>
+                        <span>{{ FormatearCantidad(kpis?.clientes_con_deuda || 0) }} clientes con deuda</span>
                         <Link :href="route('clientes.index')" class="text-rose-600 dark:text-rose-400 font-bold hover:underline">Cobrar abonos →</Link>
                     </div>
                 </div>
@@ -228,7 +229,7 @@ const BadgeAccion = (acc) =>
                         <div>
                             <span class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Stock Crítico</span>
                             <div class="text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-400 mt-1 font-mono tracking-tight">
-                                {{ kpis?.conteo_stock_bajo || 0 }}
+                                {{ FormatearCantidad(kpis?.conteo_stock_bajo || 0) }}
                             </div>
                             <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">
                                 Artículos bajo mínimo
@@ -280,9 +281,9 @@ const BadgeAccion = (acc) =>
                                 </span>
                                 <div class="text-right">
                                     <span class="font-mono text-gray-900 dark:text-white font-black">
-                                        ${{ Number(m.total_usd).toFixed(2) }}
+                                        ${{ FormatearNumero(m.total_usd) }}
                                     </span>
-                                    <span class="text-[10px] text-gray-400 ml-1.5 font-mono">({{ m.porcentaje }}%)</span>
+                                    <span class="text-[10px] text-gray-400 ml-1.5 font-mono">({{ FormatearNumero(m.porcentaje, 1) }}%)</span>
                                 </div>
                             </div>
 
@@ -352,10 +353,10 @@ const BadgeAccion = (acc) =>
                                         </div>
                                     </td>
                                     <td class="py-3 text-center font-mono font-bold text-sm text-gray-800 dark:text-gray-200">
-                                        {{ p.total_unidades }} <span class="text-[10px] font-normal text-gray-400">unds</span>
+                                        {{ FormatearCantidad(p.total_unidades) }} <span class="text-[10px] font-normal text-gray-400">unds</span>
                                     </td>
                                     <td class="py-3 text-right font-mono font-black text-sm text-emerald-600 dark:text-emerald-400">
-                                        ${{ Number(p.total_facturado).toFixed(2) }}
+                                        ${{ FormatearNumero(p.total_facturado) }}
                                     </td>
                                 </tr>
                             </tbody>
@@ -394,12 +395,12 @@ const BadgeAccion = (acc) =>
                             <div>
                                 <div class="font-bold text-gray-900 dark:text-white">{{ prod.nombre }}</div>
                                 <div class="text-[10px] text-gray-500 font-mono">
-                                    SKU: {{ prod.sku }} | Mínimo requerido: {{ prod.stock_minimo }}
+                                    SKU: {{ prod.sku }} | Mínimo requerido: {{ FormatearCantidad(prod.stock_minimo) }}
                                 </div>
                             </div>
                             <div class="text-right flex items-center gap-2">
                                 <span class="px-2.5 py-1 bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300 font-mono font-black rounded-lg text-xs">
-                                    {{ prod.stock_actual }} disp.
+                                    {{ FormatearCantidad(prod.stock_actual) }} disp.
                                 </span>
                                 <Link
                                     :href="route('inventario.productos.index', { buscar: prod.sku })"

@@ -79,16 +79,16 @@ class ReceiptService
         {
             $nombreProd = substr($detalle->Producto?->nombre ?? 'Producto', 0, 40);
             $unidadAbrev = substr($detalle->Producto?->Unidad?->abreviatura ?? 'UND', 0, 4);
-            $cantStr = number_format($detalle->cantidad, 0);
-            $pUnitStr = number_format((float) $detalle->precio_unitario, 2);
-            $subtotalStr = number_format((float) $detalle->subtotal, 2);
+            $cantStr = number_format($detalle->cantidad, 0, ',', '.');
+            $pUnitStr = number_format((float) $detalle->precio_unitario, 2, ',', '.');
+            $subtotalStr = number_format((float) $detalle->subtotal, 2, ',', '.');
 
             $ticket .= $nombreProd . "\n";
             $ticket .= sprintf("  %3sx %-4s        %8s %8s\n", $cantStr, $unidadAbrev, "$" . $pUnitStr, "$" . $subtotalStr);
 
             if ((float) $detalle->descuento > 0)
             {
-                $ticket .= sprintf("  (Descuento: -%s)\n", "$" . number_format((float) $detalle->descuento, 2));
+                $ticket .= sprintf("  (Descuento: -%s)\n", "$" . number_format((float) $detalle->descuento, 2, ',', '.'));
             }
         }
 
@@ -101,13 +101,13 @@ class ReceiptService
         $ticket .= $Derecha;
         if ((float) $venta->descuento_total > 0)
         {
-            $ticket .= sprintf("SUBTOTAL: %12s\n", "$" . number_format((float) $venta->subtotal, 2));
-            $ticket .= sprintf("DESCUENTO: %11s\n", "-$" . number_format((float) $venta->descuento_total, 2));
+            $ticket .= sprintf("SUBTOTAL: %12s\n", "$" . number_format((float) $venta->subtotal, 2, ',', '.'));
+            $ticket .= sprintf("DESCUENTO: %11s\n", "-$" . number_format((float) $venta->descuento_total, 2, ',', '.'));
         }
 
-        $ticket .= $NegritaOn . sprintf("TOTAL USD: %11s\n", "$" . number_format($totalUsd, 2)) . $NegritaOff;
-        $ticket .= sprintf("TASA BCV:  %11s\n", "Bs. " . number_format($TasaVes, 2));
-        $ticket .= $NegritaOn . sprintf("TOTAL VES: %11s\n", "Bs. " . number_format($totalVes, 2)) . $NegritaOff;
+        $ticket .= $NegritaOn . sprintf("TOTAL USD: %11s\n", "$" . number_format($totalUsd, 2, ',', '.')) . $NegritaOff;
+        $ticket .= sprintf("TASA BCV:  %11s\n", "Bs. " . number_format($TasaVes, 2, ',', '.'));
+        $ticket .= $NegritaOn . sprintf("TOTAL VES: %11s\n", "Bs. " . number_format($totalVes, 2, ',', '.')) . $NegritaOff;
 
         // Formas de Pago
         $ticket .= $Izquierda;
@@ -118,8 +118,8 @@ class ReceiptService
         {
             $metodoNombre = $pago->MetodoPago?->nombre ?? 'Pago';
             $simbolo = $pago->Moneda?->simbolo ?? '$';
-            $montoOriginal = number_format((float) $pago->monto, 2);
-            $montoBase = number_format((float) $pago->monto_base, 2);
+            $montoOriginal = number_format((float) $pago->monto, 2, ',', '.');
+            $montoBase = number_format((float) $pago->monto_base, 2, ',', '.');
 
             $lineaPago = sprintf(" - %-18s %s%s", substr($metodoNombre, 0, 18), $simbolo, $montoOriginal);
             if ($pago->Moneda?->codigo !== 'USD')
@@ -142,16 +142,16 @@ class ReceiptService
             $ticket .= $Centrado . $NegritaOn . "*** FINANCIAMIENTO CASHEA (BNPL) ***\n" . $NegritaOff . $Izquierda;
             $ticket .= "REF CASHEA:     " . $cashea->referencia_cashea . "\n";
             $ticket .= "CEDULA:         " . $cashea->cedula_cliente . "\n";
-            $ticket .= sprintf("INICIAL PAGADA: $%s (%.0f%%)\n", number_format((float) $cashea->monto_inicial, 2), (float) $cashea->porcentaje_inicial);
-            $ticket .= sprintf("SALDO FINANCIADO: $%s\n", number_format((float) $cashea->monto_financiado, 2));
-            $ticket .= sprintf("CUOTAS EN APP:  %d cuotas quincenales de $%s\n", (int) $cashea->numero_cuotas, number_format((float) $cashea->monto_cuota, 2));
+            $ticket .= sprintf("INICIAL PAGADA: $%s (%.0f%%)\n", number_format((float) $cashea->monto_inicial, 2, ',', '.'), (float) $cashea->porcentaje_inicial);
+            $ticket .= sprintf("SALDO FINANCIADO: $%s\n", number_format((float) $cashea->monto_financiado, 2, ',', '.'));
+            $ticket .= sprintf("CUOTAS EN APP:  %d cuotas quincenales de $%s\n", (int) $cashea->numero_cuotas, number_format((float) $cashea->monto_cuota, 2, ',', '.'));
 
             if (!empty($cashea->payload['cuotas']) && is_array($cashea->payload['cuotas']))
             {
                 $ticket .= "CALENDARIO DE VENCIMIENTOS:\n";
                 foreach ($cashea->payload['cuotas'] as $c)
                 {
-                    $ticket .= sprintf("  Cuota %d: $%s - Vence: %s\n", $c['numero_cuota'], number_format((float) $c['monto'], 2), $c['fecha_formateada'] ?? $c['fecha_vencimiento']);
+                    $ticket .= sprintf("  Cuota %d: $%s - Vence: %s\n", $c['numero_cuota'], number_format((float) $c['monto'], 2, ',', '.'), $c['fecha_formateada'] ?? $c['fecha_vencimiento']);
                 }
             }
             $ticket .= "(Pague sus cuotas a tiempo en la app Cashea)\n";

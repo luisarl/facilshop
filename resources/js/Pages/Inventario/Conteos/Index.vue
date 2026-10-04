@@ -3,6 +3,7 @@ import { ref, reactive } from 'vue';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { FormatearFechaHora } from '@/Utils/FechaHora';
+import { FormatearNumero, FormatearCantidad } from '@/Utils/FormatoNumero';
 
 const props = defineProps({
     conteos: Object,
@@ -216,7 +217,7 @@ const IniciarConteo = () => {
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-center font-mono text-sm font-bold text-gray-700 dark:text-gray-300">
-                                        {{ conteo.total_items_contados }}
+                                        {{ FormatearCantidad(conteo.total_items_contados) }}
                                     </td>
                                     <td class="px-6 py-4 text-center font-mono font-bold">
                                         <span
@@ -226,7 +227,7 @@ const IniciarConteo = () => {
                                                     : (conteo.total_diferencia_unidades > 0 ? 'text-blue-600' : 'text-rose-600')
                                             ]"
                                         >
-                                            {{ conteo.total_diferencia_unidades > 0 ? '+' : '' }}{{ conteo.total_diferencia_unidades }}
+                                            {{ conteo.total_diferencia_unidades > 0 ? '+' : '' }}{{ FormatearCantidad(conteo.total_diferencia_unidades) }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-right font-mono font-bold text-sm">
@@ -237,7 +238,7 @@ const IniciarConteo = () => {
                                                     : (Number(conteo.total_diferencia_costo) > 0 ? 'text-blue-600' : 'text-rose-600')
                                             ]"
                                         >
-                                            ${{ Number(conteo.total_diferencia_costo).toFixed(2) }}
+                                            ${{ FormatearNumero(conteo.total_diferencia_costo) }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4">

@@ -5,6 +5,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ModalDiffAuditoria from '@/Pages/Auditorias/Partials/ModalDiffAuditoria.vue';
 import ModalHistorialEntidad from '@/Pages/Auditorias/Partials/ModalHistorialEntidad.vue';
 import { FormatearFechaHora } from '@/Utils/FechaHora';
+import { FormatearCantidad } from '@/Utils/FormatoNumero';
 import axios from 'axios';
 
 const props = defineProps({
@@ -195,7 +196,7 @@ const BadgeAccion = (acc) =>
                 >
                     <span class="text-[10px] uppercase font-semibold text-gray-400">Total Eventos</span>
                     <div class="text-xl font-bold text-gray-900 dark:text-white mt-1 font-mono">
-                        {{ kpis.total_general }}
+                        {{ FormatearCantidad(kpis.total_general) }}
                     </div>
                 </div>
 
@@ -206,7 +207,7 @@ const BadgeAccion = (acc) =>
                 >
                     <span class="text-[10px] uppercase font-semibold text-gray-400">Registrados Hoy</span>
                     <div class="text-xl font-bold text-indigo-600 dark:text-indigo-400 mt-1 font-mono">
-                        {{ kpis.total_hoy }}
+                        {{ FormatearCantidad(kpis.total_hoy) }}
                     </div>
                 </div>
 
@@ -217,7 +218,7 @@ const BadgeAccion = (acc) =>
                 >
                     <span class="text-[10px] uppercase font-semibold text-gray-400">Creaciones</span>
                     <div class="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 font-mono">
-                        {{ kpis.total_creaciones }}
+                        {{ FormatearCantidad(kpis.total_creaciones) }}
                     </div>
                 </div>
 
@@ -228,7 +229,7 @@ const BadgeAccion = (acc) =>
                 >
                     <span class="text-[10px] uppercase font-semibold text-gray-400">Actualizaciones</span>
                     <div class="text-xl font-bold text-blue-600 dark:text-blue-400 mt-1 font-mono">
-                        {{ kpis.total_actualizaciones }}
+                        {{ FormatearCantidad(kpis.total_actualizaciones) }}
                     </div>
                 </div>
 
@@ -239,7 +240,7 @@ const BadgeAccion = (acc) =>
                 >
                     <span class="text-[10px] uppercase font-semibold text-gray-400">Eliminaciones</span>
                     <div class="text-xl font-bold text-red-600 dark:text-red-400 mt-1 font-mono">
-                        {{ kpis.total_eliminaciones }}
+                        {{ FormatearCantidad(kpis.total_eliminaciones) }}
                     </div>
                 </div>
 
@@ -250,7 +251,7 @@ const BadgeAccion = (acc) =>
                 >
                     <span class="text-[10px] uppercase font-semibold text-gray-400">Anulaciones</span>
                     <div class="text-xl font-bold text-amber-600 dark:text-amber-400 mt-1 font-mono">
-                        {{ kpis.total_anulaciones }}
+                        {{ FormatearCantidad(kpis.total_anulaciones) }}
                     </div>
                 </div>
             </div>

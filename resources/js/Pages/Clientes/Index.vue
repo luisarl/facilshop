@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { FormatearFecha } from '@/Utils/FechaHora';
+import { FormatearNumero, FormatearCantidad } from '@/Utils/FormatoNumero';
 import axios from 'axios';
 
 const props = defineProps({
@@ -229,12 +230,12 @@ const VerEstadoCuenta = async (cliente) => {
                     </div>
                     <div class="mt-2 flex items-baseline gap-2">
                         <span class="text-2xl font-bold text-red-600 dark:text-red-400">
-                            ${{ Number(kpis.total_cartera_usd).toFixed(2) }}
+                            ${{ FormatearNumero(kpis.total_cartera_usd) }}
                         </span>
                         <span class="text-xs text-gray-500">USD</span>
                     </div>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        ≈ Bs. {{ Number(kpis.total_cartera_ves).toLocaleString('es-VE', { minimumFractionDigits: 2 }) }}
+                        ≈ Bs. {{ FormatearNumero(kpis.total_cartera_ves) }}
                     </p>
                 </div>
 
@@ -249,12 +250,12 @@ const VerEstadoCuenta = async (cliente) => {
                     </div>
                     <div class="mt-2 flex items-baseline gap-2">
                         <span class="text-2xl font-bold text-gray-900 dark:text-white">
-                            ${{ Number(kpis.total_limite_otorgado).toFixed(2) }}
+                            ${{ FormatearNumero(kpis.total_limite_otorgado) }}
                         </span>
                         <span class="text-xs text-gray-500">USD</span>
                     </div>
                     <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
-                        Disponible: ${{ Math.max(0, kpis.total_limite_otorgado - kpis.total_cartera_usd).toFixed(2) }}
+                        Disponible: ${{ FormatearNumero(Math.max(0, kpis.total_limite_otorgado - kpis.total_cartera_usd)) }}
                     </p>
                 </div>
 
@@ -274,7 +275,7 @@ const VerEstadoCuenta = async (cliente) => {
                         <span class="text-xs text-gray-500">de {{ kpis.total_clientes }} clientes</span>
                     </div>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        {{ kpis.total_clientes > 0 ? ((kpis.clientes_con_deuda / kpis.total_clientes) * 100).toFixed(1) : 0 }}% de la cartera
+                        {{ kpis.total_clientes > 0 ? FormatearNumero((kpis.clientes_con_deuda / kpis.total_clientes) * 100, 1) : '0' }}% de la cartera
                     </p>
                 </div>
 
@@ -289,7 +290,7 @@ const VerEstadoCuenta = async (cliente) => {
                     </div>
                     <div class="mt-2 flex items-baseline gap-2">
                         <span class="text-2xl font-bold text-gray-900 dark:text-white">
-                            Bs. {{ Number(kpis.tasa_ves).toFixed(2) }}
+                            Bs. {{ FormatearNumero(kpis.tasa_ves) }}
                         </span>
                     </div>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -378,18 +379,18 @@ const VerEstadoCuenta = async (cliente) => {
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-right font-mono font-medium text-gray-900 dark:text-white">
-                                    ${{ Number(c.limite_credito).toFixed(2) }}
+                                    ${{ FormatearNumero(c.limite_credito) }}
                                 </td>
                                 <td class="px-6 py-4 text-right font-mono font-bold">
                                     <span :class="Number(c.saldo_pendiente) > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'">
-                                        ${{ Number(c.saldo_pendiente).toFixed(2) }}
+                                        ${{ FormatearNumero(c.saldo_pendiente) }}
                                     </span>
                                     <div v-if="Number(c.saldo_pendiente) > 0" class="text-[10px] text-gray-500 font-normal">
-                                        ≈ Bs. {{ (Number(c.saldo_pendiente) * tasaVes).toLocaleString('es-VE', { minimumFractionDigits: 2 }) }}
+                                        ≈ Bs. {{ FormatearNumero(Number(c.saldo_pendiente) * tasaVes) }}
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-right font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
-                                    ${{ Math.max(0, Number(c.limite_credito) - Number(c.saldo_pendiente)).toFixed(2) }}
+                                    ${{ FormatearNumero(Math.max(0, Number(c.limite_credito) - Number(c.saldo_pendiente))) }}
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <span
@@ -601,19 +602,19 @@ const VerEstadoCuenta = async (cliente) => {
                         <div>
                             <span class="text-[11px] uppercase font-semibold text-gray-500">Deuda Pendiente</span>
                             <div class="text-lg font-bold text-red-600 dark:text-red-400 font-mono">
-                                ${{ Number(clienteAbonar?.saldo_pendiente).toFixed(2) }}
+                                ${{ FormatearNumero(clienteAbonar?.saldo_pendiente) }}
                             </div>
                             <div class="text-[10px] text-gray-400">
-                                ≈ Bs. {{ (Number(clienteAbonar?.saldo_pendiente) * tasaVes).toFixed(2) }}
+                                ≈ Bs. {{ FormatearNumero(Number(clienteAbonar?.saldo_pendiente) * tasaVes) }}
                             </div>
                         </div>
                         <div class="text-right">
                             <span class="text-[11px] uppercase font-semibold text-gray-500">Nuevo Saldo Tras Abono</span>
                             <div class="text-lg font-bold text-emerald-600 dark:text-emerald-400 font-mono">
-                                ${{ nuevoSaldoEstimado.toFixed(2) }}
+                                ${{ FormatearNumero(nuevoSaldoEstimado) }}
                             </div>
                             <div class="text-[10px] text-gray-400">
-                                Abono: ${{ Number(formAbono.monto_base).toFixed(2) }} USD
+                                Abono: ${{ FormatearNumero(formAbono.monto_base) }} USD
                             </div>
                         </div>
                     </div>
@@ -700,7 +701,7 @@ const VerEstadoCuenta = async (cliente) => {
                                 :disabled="formAbono.processing || formAbono.monto_base <= 0 || formAbono.monto_base > Number(clienteAbonar?.saldo_pendiente)"
                                 class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg shadow-sm disabled:opacity-50"
                             >
-                                Confirmar Abono de ${{ Number(formAbono.monto_base).toFixed(2) }}
+                                Confirmar Abono de ${{ FormatearNumero(formAbono.monto_base) }}
                             </button>
                         </div>
                     </form>
@@ -735,19 +736,19 @@ const VerEstadoCuenta = async (cliente) => {
                             <div>
                                 <span class="text-[10px] uppercase font-semibold text-gray-500">Límite Aprobado</span>
                                 <div class="text-sm font-bold text-gray-900 dark:text-white font-mono">
-                                    ${{ Number(estadoCuenta.limite_credito).toFixed(2) }}
+                                    ${{ FormatearNumero(estadoCuenta.limite_credito) }}
                                 </div>
                             </div>
                             <div>
                                 <span class="text-[10px] uppercase font-semibold text-gray-500">Saldo Pendiente</span>
                                 <div class="text-sm font-bold text-red-600 dark:text-red-400 font-mono">
-                                    ${{ Number(estadoCuenta.saldo_pendiente_usd).toFixed(2) }}
+                                    ${{ FormatearNumero(estadoCuenta.saldo_pendiente_usd) }}
                                 </div>
                             </div>
                             <div>
                                 <span class="text-[10px] uppercase font-semibold text-gray-500">Crédito Disponible</span>
                                 <div class="text-sm font-bold text-emerald-600 dark:text-emerald-400 font-mono">
-                                    ${{ Number(estadoCuenta.credito_disponible).toFixed(2) }}
+                                    ${{ FormatearNumero(estadoCuenta.credito_disponible) }}
                                 </div>
                             </div>
                         </div>
@@ -781,7 +782,7 @@ const VerEstadoCuenta = async (cliente) => {
                                     </div>
                                     <div class="text-right">
                                         <div class="font-bold text-gray-900 dark:text-white font-mono text-sm">
-                                            ${{ Number(v.total).toFixed(2) }}
+                                            ${{ FormatearNumero(v.total) }}
                                         </div>
                                         <span
                                             :class="[

@@ -3,6 +3,7 @@ import { ref, watch, nextTick } from 'vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { FormatearFecha, FormatearHora, FormatearFechaHora } from '@/Utils/FechaHora';
+import { FormatearNumero, FormatearCantidad } from '@/Utils/FormatoNumero';
 import QRCode from 'qrcode';
 
 const props = defineProps({
@@ -157,12 +158,12 @@ const ProcesarAnulacion = () => {
                     </div>
                     <div class="mt-2 flex items-baseline gap-2">
                         <span class="text-2xl font-bold text-gray-900 dark:text-white">
-                            ${{ Number(metricas.total_hoy_usd).toFixed(2) }}
+                            ${{ FormatearNumero(metricas.total_hoy_usd) }}
                         </span>
                         <span class="text-xs text-gray-500">USD</span>
                     </div>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        ≈ Bs. {{ Number(metricas.total_hoy_ves).toLocaleString('es-VE', { minimumFractionDigits: 2 }) }}
+                        ≈ Bs. {{ FormatearNumero(metricas.total_hoy_ves) }}
                     </p>
                 </div>
 
@@ -177,7 +178,7 @@ const ProcesarAnulacion = () => {
                     </div>
                     <div class="mt-2 flex items-baseline gap-2">
                         <span class="text-2xl font-bold text-gray-900 dark:text-white">
-                            {{ metricas.comprobantes_hoy }}
+                            {{ FormatearCantidad(metricas.comprobantes_hoy) }}
                         </span>
                         <span class="text-xs text-gray-500">hoy</span>
                     </div>
@@ -197,9 +198,9 @@ const ProcesarAnulacion = () => {
                     </div>
                     <div class="mt-2 flex items-baseline gap-2">
                         <span class="text-2xl font-bold text-amber-600 dark:text-amber-400">
-                            ${{ Number(metricas.total_cashea_usd).toFixed(2) }}
+                            ${{ FormatearNumero(metricas.total_cashea_usd) }}
                         </span>
-                        <span class="text-xs text-gray-500 font-mono font-bold">{{ metricas.ventas_cashea_hoy }} ventas</span>
+                        <span class="text-xs text-gray-500 font-mono font-bold">{{ FormatearCantidad(metricas.ventas_cashea_hoy) }} ventas</span>
                     </div>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         Financiado en 3 cuotas quincenales
@@ -217,7 +218,7 @@ const ProcesarAnulacion = () => {
                     </div>
                     <div class="mt-2 flex items-baseline gap-2">
                         <span class="text-2xl font-bold text-red-600 dark:text-red-400">
-                            {{ metricas.anuladas_hoy }}
+                            {{ FormatearCantidad(metricas.anuladas_hoy) }}
                         </span>
                         <span class="text-xs text-gray-500">hoy</span>
                     </div>
@@ -372,10 +373,10 @@ const ProcesarAnulacion = () => {
                                     </div>
                                 </td>
                                 <td class="px-5 py-3.5 text-right font-mono font-bold text-gray-900 dark:text-white text-sm">
-                                    ${{ Number(v.total).toFixed(2) }}
+                                    ${{ FormatearNumero(v.total) }}
                                 </td>
                                 <td class="px-5 py-3.5 text-right font-mono text-gray-600 dark:text-gray-300">
-                                    Bs. {{ (Number(v.total) * Number(v.tasa_cambio)).toLocaleString('es-VE', { minimumFractionDigits: 2 }) }}
+                                    Bs. {{ FormatearNumero(Number(v.total) * Number(v.tasa_cambio)) }}
                                 </td>
                                 <td class="px-5 py-3.5 text-center">
                                     <span
@@ -535,9 +536,9 @@ const ProcesarAnulacion = () => {
                                         <span class="font-semibold text-gray-900 dark:text-white">{{ d.producto?.nombre }}</span>
                                         <span class="text-[10px] text-gray-400 block font-mono">SKU: {{ d.producto?.sku }}</span>
                                     </td>
-                                    <td class="py-2 text-center font-mono font-bold">{{ d.cantidad }}</td>
-                                    <td class="py-2 text-right font-mono">${{ Number(d.precio_unitario).toFixed(2) }}</td>
-                                    <td class="py-2 text-right font-mono font-bold">${{ Number(d.subtotal).toFixed(2) }}</td>
+                                    <td class="py-2 text-center font-mono font-bold">{{ FormatearCantidad(d.cantidad) }}</td>
+                                    <td class="py-2 text-right font-mono">${{ FormatearNumero(d.precio_unitario) }}</td>
+                                    <td class="py-2 text-right font-mono font-bold">${{ FormatearNumero(d.subtotal) }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -562,23 +563,23 @@ const ProcesarAnulacion = () => {
                             <div class="w-full sm:w-64 space-y-1.5 text-xs text-right font-mono">
                                 <div class="flex justify-between text-gray-500">
                                     <span>Subtotal:</span>
-                                    <span>${{ Number(ventaSeleccionada?.subtotal).toFixed(2) }}</span>
+                                    <span>${{ FormatearNumero(ventaSeleccionada?.subtotal) }}</span>
                                 </div>
                                 <div v-if="Number(ventaSeleccionada?.descuento_total) > 0" class="flex justify-between text-emerald-600 font-semibold">
                                     <span>Descuento:</span>
-                                    <span>-${{ Number(ventaSeleccionada?.descuento_total).toFixed(2) }}</span>
+                                    <span>-${{ FormatearNumero(ventaSeleccionada?.descuento_total) }}</span>
                                 </div>
                                 <div class="flex justify-between text-base font-extrabold text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-700 pt-1">
                                     <span>TOTAL USD:</span>
-                                    <span>${{ Number(ventaSeleccionada?.total).toFixed(2) }}</span>
+                                    <span>${{ FormatearNumero(ventaSeleccionada?.total) }}</span>
                                 </div>
                                 <div class="flex justify-between text-xs text-gray-500">
                                     <span>Tasa BCV:</span>
-                                    <span>Bs. {{ Number(ventaSeleccionada?.tasa_cambio).toFixed(2) }}</span>
+                                    <span>Bs. {{ FormatearNumero(ventaSeleccionada?.tasa_cambio) }}</span>
                                 </div>
                                 <div class="flex justify-between font-bold text-gray-800 dark:text-gray-200">
                                     <span>TOTAL VES:</span>
-                                    <span>Bs. {{ (Number(ventaSeleccionada?.total) * Number(ventaSeleccionada?.tasa_cambio)).toLocaleString('es-VE', { minimumFractionDigits: 2 }) }}</span>
+                                    <span>Bs. {{ FormatearNumero(Number(ventaSeleccionada?.total) * Number(ventaSeleccionada?.tasa_cambio)) }}</span>
                                 </div>
                             </div>
                         </div>
@@ -593,8 +594,8 @@ const ProcesarAnulacion = () => {
                                 <span class="font-mono">Ref: {{ ventaSeleccionada.cashea_transaccion.referencia_cashea }}</span>
                             </div>
                             <div class="grid grid-cols-2 gap-2 text-[11px] text-amber-800 dark:text-amber-300">
-                                <div>Inicial Pagada: ${{ Number(ventaSeleccionada.cashea_transaccion.monto_inicial).toFixed(2) }} ({{ Number(ventaSeleccionada.cashea_transaccion.porcentaje_inicial) }}%)</div>
-                                <div class="text-right">Financiado: ${{ Number(ventaSeleccionada.cashea_transaccion.monto_financiado).toFixed(2) }} (3 cuotas de ${{ Number(ventaSeleccionada.cashea_transaccion.monto_cuota).toFixed(2) }})</div>
+                                <div>Inicial Pagada: ${{ FormatearNumero(ventaSeleccionada.cashea_transaccion.monto_inicial) }} ({{ FormatearNumero(ventaSeleccionada.cashea_transaccion.porcentaje_inicial, 0) }}%)</div>
+                                <div class="text-right">Financiado: ${{ FormatearNumero(ventaSeleccionada.cashea_transaccion.monto_financiado) }} (3 cuotas de ${{ FormatearNumero(ventaSeleccionada.cashea_transaccion.monto_cuota) }})</div>
                             </div>
                         </div>
                     </div>

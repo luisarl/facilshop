@@ -1,6 +1,7 @@
 <script setup>
 import { usePosStore } from '@/Stores/usePosStore';
 import { FormatearHora } from '@/Utils/FechaHora';
+import { FormatearNumero, FormatearCantidad } from '@/Utils/FormatoNumero';
 
 const emit = defineEmits(['cerrar']);
 const posStore = usePosStore();
@@ -61,10 +62,10 @@ const Descartar = (ticketId) =>
 
                         <div class="text-right">
                             <div class="text-base font-black font-mono text-indigo-600 dark:text-indigo-400">
-                                ${{ ticket.totalUsd.toFixed(2) }}
+                                ${{ FormatearNumero(ticket.totalUsd) }}
                             </div>
                             <div class="text-[10px] text-gray-400 font-mono">
-                                Bs. {{ ticket.totalVes.toFixed(2) }}
+                                Bs. {{ FormatearNumero(ticket.totalVes) }}
                             </div>
                         </div>
                     </div>
@@ -72,7 +73,7 @@ const Descartar = (ticketId) =>
                     <!-- Resumen de items -->
                     <div class="text-xs text-gray-500 dark:text-gray-400 bg-white/60 dark:bg-gray-800/60 p-2 rounded-xl border border-gray-100 dark:border-gray-700/60">
                         <span v-for="(it, idx) in ticket.items.slice(0, 3)" :key="it.id_producto">
-                            {{ it.cantidad }}x {{ it.nombre }}<span v-if="idx < Math.min(2, ticket.items.length - 1)">, </span>
+                            {{ FormatearCantidad(it.cantidad) }}x {{ it.nombre }}<span v-if="idx < Math.min(2, ticket.items.length - 1)">, </span>
                         </span>
                         <span v-if="ticket.items.length > 3" class="font-semibold text-gray-400">
                             (+{{ ticket.items.length - 3 }} más...)

@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { FormatearNumero, FormatearCantidad } from '@/Utils/FormatoNumero';
 
 const props = defineProps({
     tipos_entrada: Array,
@@ -294,7 +295,7 @@ const RegistrarAjuste = () => {
                             >
                                 <div>
                                     <div class="text-xs font-bold text-gray-900 dark:text-gray-100">{{ prod.nombre }}</div>
-                                    <div class="text-[10px] text-gray-400 font-mono">SKU: {{ prod.sku }} | Stock: {{ prod.stock_actual }} {{ prod.unidad?.abreviatura || 'UND' }}</div>
+                                    <div class="text-[10px] text-gray-400 font-mono">SKU: {{ prod.sku }} | Stock: {{ FormatearCantidad(prod.stock_actual) }} {{ prod.unidad?.abreviatura || 'UND' }}</div>
                                 </div>
                                 <span class="px-2 py-1 bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 text-[10px] font-bold rounded-lg">
                                     + Agregar
@@ -328,11 +329,11 @@ const RegistrarAjuste = () => {
                                             <div class="font-bold text-gray-900 dark:text-gray-100">{{ fila.nombre }}</div>
                                             <div class="text-[10px] text-gray-400 font-mono">SKU: {{ fila.sku }}</div>
                                             <div v-if="fila.error_stock" class="text-[10px] font-bold text-rose-600 mt-1">
-                                                ⚠️ Stock insuficiente para salida (Disponible: {{ fila.stock_actual }})
+                                                ⚠️ Stock insuficiente para salida (Disponible: {{ FormatearCantidad(fila.stock_actual) }})
                                             </div>
                                         </td>
                                         <td class="px-4 py-3 text-center font-mono font-bold text-gray-700 dark:text-gray-300">
-                                            {{ fila.stock_actual }}
+                                            {{ FormatearCantidad(fila.stock_actual) }}
                                         </td>
                                         <td class="px-4 py-3">
                                             <SelectFiltro
@@ -357,7 +358,7 @@ const RegistrarAjuste = () => {
                                             />
                                         </td>
                                         <td class="px-4 py-3 text-center font-mono font-bold text-indigo-600 dark:text-indigo-400">
-                                            {{ fila.cantidad_base }}
+                                            {{ FormatearCantidad(fila.cantidad_base) }}
                                         </td>
                                         <td class="px-4 py-3 text-right font-mono">
                                             <input
@@ -370,7 +371,7 @@ const RegistrarAjuste = () => {
                                             />
                                         </td>
                                         <td class="px-4 py-3 text-right font-mono font-bold text-gray-900 dark:text-gray-100">
-                                            ${{ fila.costo_total.toFixed(2) }}
+                                            ${{ FormatearNumero(fila.costo_total) }}
                                         </td>
                                         <td class="px-4 py-3">
                                             <input
@@ -407,7 +408,7 @@ const RegistrarAjuste = () => {
                                 </div>
                                 <div class="text-xs text-gray-500">
                                     Total unidades base a {{ naturalezaSeleccionada === 'ENTRADA' ? 'sumar' : 'restar' }}:
-                                    <span class="font-bold text-gray-800 dark:text-gray-200 font-mono">{{ totalItemsBase }}</span>
+                                    <span class="font-bold text-gray-800 dark:text-gray-200 font-mono">{{ FormatearCantidad(totalItemsBase) }}</span>
                                 </div>
                             </div>
 
@@ -416,7 +417,7 @@ const RegistrarAjuste = () => {
                                     Costo Total Estimado
                                 </div>
                                 <div class="text-2xl font-black text-gray-900 dark:text-gray-100 font-mono">
-                                    ${{ totalCosto.toFixed(2) }}
+                                    ${{ FormatearNumero(totalCosto) }}
                                 </div>
                             </div>
                         </div>

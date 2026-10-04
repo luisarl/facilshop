@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { Head, useForm, router, Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { FormatearFechaHora } from '@/Utils/FechaHora';
+import { FormatearNumero } from '@/Utils/FormatoNumero';
 
 const props = defineProps({
     usuarios: Array,
@@ -619,7 +620,7 @@ const AlternarEstadoMarca = (marca) => {
                         <div class="pt-2 border-t border-gray-100 dark:border-gray-700/60 flex justify-between items-baseline">
                             <span class="text-xs text-gray-500">Cotización:</span>
                             <span class="text-lg font-black font-mono text-gray-900 dark:text-white">
-                                {{ m.simbolo }} {{ Number(m.tasa_cambio).toFixed(4) }}
+                                {{ m.simbolo }} {{ FormatearNumero(m.tasa_cambio, 4) }}
                             </span>
                         </div>
                     </div>
@@ -640,8 +641,8 @@ const AlternarEstadoMarca = (marca) => {
                                 <div class="text-[10px] text-gray-400">{{ FormatearFechaHora(h.created_at) }}</div>
                             </div>
                             <div class="text-right font-mono">
-                                <span class="text-gray-400">{{ Number(h.tasa_anterior).toFixed(4) }} ➔</span>
-                                <span class="font-bold text-emerald-600 dark:text-emerald-400 ml-1">{{ Number(h.tasa_nueva).toFixed(4) }}</span>
+                                <span class="text-gray-400">{{ FormatearNumero(h.tasa_anterior, 4) }} ➔</span>
+                                <span class="font-bold text-emerald-600 dark:text-emerald-400 ml-1">{{ FormatearNumero(h.tasa_nueva, 4) }}</span>
                             </div>
                         </div>
                     </div>

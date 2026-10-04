@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { FormatearFechaHora } from '@/Utils/FechaHora';
+import { FormatearNumero, FormatearCantidad } from '@/Utils/FormatoNumero';
 
 const props = defineProps({
     ajuste: Object,
@@ -145,22 +146,22 @@ const Imprimir = () =>
                                         {{ det.unidad?.nombre }}
                                     </td>
                                     <td class="py-2.5 px-3 text-right font-bold">
-                                        {{ det.cantidad }}
+                                        {{ FormatearCantidad(det.cantidad) }}
                                     </td>
                                     <td class="py-2.5 px-3 text-center font-bold text-indigo-600 dark:text-indigo-400">
-                                        {{ det.cantidad_base }}
+                                        {{ FormatearCantidad(det.cantidad_base) }}
                                     </td>
                                     <td class="py-2.5 px-3 text-center text-gray-400">
-                                        {{ det.stock_anterior }}
+                                        {{ FormatearCantidad(det.stock_anterior) }}
                                     </td>
                                     <td class="py-2.5 px-3 text-center font-bold text-gray-900 dark:text-gray-100">
-                                        {{ det.nuevo_stock }}
+                                        {{ FormatearCantidad(det.nuevo_stock) }}
                                     </td>
                                     <td class="py-2.5 px-3 text-right text-gray-600 dark:text-gray-300">
-                                        ${{ Number(det.costo_unitario).toFixed(2) }}
+                                        ${{ FormatearNumero(det.costo_unitario) }}
                                     </td>
                                     <td class="py-2.5 px-3 text-right font-bold text-gray-900 dark:text-gray-100">
-                                        ${{ Number(det.costo_total).toFixed(2) }}
+                                        ${{ FormatearNumero(det.costo_total) }}
                                     </td>
                                 </tr>
                             </tbody>
@@ -172,11 +173,11 @@ const Imprimir = () =>
                         <div class="w-72 space-y-2 text-xs">
                             <div class="flex justify-between text-gray-500">
                                 <span>Total Unidades Base:</span>
-                                <span class="font-mono font-bold text-gray-800 dark:text-gray-200">{{ ajuste.total_items }}</span>
+                                <span class="font-mono font-bold text-gray-800 dark:text-gray-200">{{ FormatearCantidad(ajuste.total_items) }}</span>
                             </div>
                             <div class="flex justify-between text-base font-bold text-gray-900 dark:text-gray-100 border-t border-gray-200 dark:border-gray-700 pt-2">
                                 <span>Total Costo USD:</span>
-                                <span class="font-mono text-emerald-600 dark:text-emerald-400">${{ Number(ajuste.total_costo).toFixed(2) }}</span>
+                                <span class="font-mono text-emerald-600 dark:text-emerald-400">${{ FormatearNumero(ajuste.total_costo) }}</span>
                             </div>
                         </div>
                     </div>

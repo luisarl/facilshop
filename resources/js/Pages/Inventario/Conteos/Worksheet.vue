@@ -2,6 +2,7 @@
 import { ref, computed, nextTick } from 'vue';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { FormatearNumero, FormatearCantidad } from '@/Utils/FormatoNumero';
 
 const props = defineProps({
     conteo: Object,
@@ -277,7 +278,7 @@ const Imprimir = () => {
                                     : (totalDiferenciaUnidades > 0 ? 'text-blue-600' : 'text-rose-600')
                             ]"
                         >
-                            {{ totalDiferenciaUnidades > 0 ? '+' : '' }}{{ totalDiferenciaUnidades }}
+                            {{ totalDiferenciaUnidades > 0 ? '+' : '' }}{{ FormatearCantidad(totalDiferenciaUnidades) }}
                         </div>
                     </div>
 
@@ -293,7 +294,7 @@ const Imprimir = () => {
                                     : (totalDiferenciaCosto > 0 ? 'text-blue-600' : 'text-rose-600')
                             ]"
                         >
-                            ${{ totalDiferenciaCosto.toFixed(2) }}
+                            ${{ FormatearNumero(totalDiferenciaCosto) }}
                         </div>
                     </div>
                 </div>
@@ -424,7 +425,7 @@ const Imprimir = () => {
                                         {{ fila.unidad }}
                                     </td>
                                     <td class="px-4 py-3 text-center font-bold text-gray-500">
-                                        {{ fila.stock_teorico }}
+                                        {{ FormatearCantidad(fila.stock_teorico) }}
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         <input
@@ -435,7 +436,7 @@ const Imprimir = () => {
                                             class="w-24 py-1 px-2 text-center bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-xs font-bold font-mono focus:ring-2 focus:ring-indigo-500"
                                         />
                                         <span v-else class="font-bold text-gray-800 dark:text-gray-200">
-                                            {{ fila.stock_fisico }}
+                                            {{ FormatearCantidad(fila.stock_fisico) }}
                                         </span>
                                     </td>
                                     <td class="px-4 py-3 text-center">
@@ -449,11 +450,11 @@ const Imprimir = () => {
                                                         : 'bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300')
                                             ]"
                                         >
-                                            {{ fila.diferencia > 0 ? '+' : '' }}{{ fila.diferencia }}
+                                            {{ fila.diferencia > 0 ? '+' : '' }}{{ FormatearCantidad(fila.diferencia) }}
                                         </span>
                                     </td>
                                     <td class="px-4 py-3 text-right text-gray-500">
-                                        ${{ fila.costo_unitario.toFixed(2) }}
+                                        ${{ FormatearNumero(fila.costo_unitario) }}
                                     </td>
                                     <td class="px-4 py-3 text-right font-bold">
                                         <span
@@ -463,7 +464,7 @@ const Imprimir = () => {
                                                     : (fila.valor_diferencia > 0 ? 'text-blue-600' : 'text-rose-600')
                                             ]"
                                         >
-                                            ${{ fila.valor_diferencia.toFixed(2) }}
+                                            ${{ FormatearNumero(fila.valor_diferencia) }}
                                         </span>
                                     </td>
                                     <td class="px-4 py-3 font-sans no-print">
@@ -515,11 +516,11 @@ const Imprimir = () => {
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-500">Diferencia neta unidades:</span>
-                        <span class="font-bold font-mono">{{ totalDiferenciaUnidades > 0 ? '+' : '' }}{{ totalDiferenciaUnidades }}</span>
+                        <span class="font-bold font-mono">{{ totalDiferenciaUnidades > 0 ? '+' : '' }}{{ FormatearCantidad(totalDiferenciaUnidades) }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-500">Impacto total costo:</span>
-                        <span class="font-bold font-mono text-emerald-600 dark:text-emerald-400">${{ totalDiferenciaCosto.toFixed(2) }}</span>
+                        <span class="font-bold font-mono text-emerald-600 dark:text-emerald-400">${{ FormatearNumero(totalDiferenciaCosto) }}</span>
                     </div>
                 </div>
 

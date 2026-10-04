@@ -3,6 +3,7 @@ import { reactive } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { FormatearFechaHora } from '@/Utils/FechaHora';
+import { FormatearNumero, FormatearCantidad } from '@/Utils/FormatoNumero';
 
 const props = defineProps({
     ajustes: Object,
@@ -201,10 +202,10 @@ const LimpiarFiltros = () => {
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-center font-mono text-sm font-bold text-gray-700 dark:text-gray-300">
-                                        {{ ajuste.total_items }}
+                                        {{ FormatearCantidad(ajuste.total_items) }}
                                     </td>
                                     <td class="px-6 py-4 text-right font-mono text-sm font-bold text-gray-900 dark:text-gray-100">
-                                        ${{ Number(ajuste.total_costo).toFixed(2) }}
+                                        ${{ FormatearNumero(ajuste.total_costo) }}
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="text-sm font-medium text-gray-800 dark:text-gray-200">

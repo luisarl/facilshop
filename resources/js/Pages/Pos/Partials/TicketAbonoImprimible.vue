@@ -1,5 +1,6 @@
 <script setup>
 import { FormatearFechaHora } from '@/Utils/FechaHora';
+import { FormatearNumero } from '@/Utils/FormatoNumero';
 
 const props = defineProps({
     abono: Object,
@@ -52,20 +53,20 @@ const Imprimir = () =>
                 <div v-if="abono.monto_pagado_moneda && !abono.moneda?.es_principal" class="flex justify-between items-center text-xs">
                     <span class="text-gray-600">Monto Percibido:</span>
                     <span class="font-black">
-                        {{ abono.moneda?.codigo }} {{ Number(abono.monto_pagado_moneda).toFixed(2) }}
+                        {{ abono.moneda?.codigo }} {{ FormatearNumero(abono.monto_pagado_moneda) }}
                     </span>
                 </div>
 
                 <div class="flex justify-between items-center text-xs font-black">
                     <span>Monto Abonado (USD):</span>
                     <span class="text-sm font-mono text-emerald-700">
-                        ${{ Number(abono.monto_abonado).toFixed(2) }}
+                        ${{ FormatearNumero(abono.monto_abonado) }}
                     </span>
                 </div>
 
                 <div v-if="tasaVes && abono.moneda?.es_principal" class="flex justify-between items-center text-[10px] text-gray-500">
                     <span>Equivalente BCV:</span>
-                    <span>Bs. {{ (Number(abono.monto_abonado) * tasaVes).toFixed(2) }}</span>
+                    <span>Bs. {{ FormatearNumero(Number(abono.monto_abonado) * tasaVes) }}</span>
                 </div>
 
                 <div v-if="abono.referencia" class="flex justify-between items-center text-[10px] text-gray-500">
@@ -80,16 +81,16 @@ const Imprimir = () =>
             <div class="space-y-1 text-right text-xs">
                 <div class="flex justify-between text-gray-600">
                     <span>Saldo Anterior:</span>
-                    <span>${{ Number(abono.saldo_anterior).toFixed(2) }}</span>
+                    <span>${{ FormatearNumero(abono.saldo_anterior) }}</span>
                 </div>
                 <div class="flex justify-between text-emerald-700 font-bold">
                     <span>Abono Aplicado:</span>
-                    <span>-${{ Number(abono.monto_abonado).toFixed(2) }}</span>
+                    <span>-${{ FormatearNumero(abono.monto_abonado) }}</span>
                 </div>
                 <div class="flex justify-between text-sm font-black pt-1 border-t border-gray-200">
                     <span>NUEVO SALDO:</span>
                     <span :class="Number(abono.nuevo_saldo) > 0 ? 'text-rose-600' : 'text-emerald-600'">
-                        ${{ Number(abono.nuevo_saldo).toFixed(2) }}
+                        ${{ FormatearNumero(abono.nuevo_saldo) }}
                     </span>
                 </div>
                 <div v-if="Number(abono.nuevo_saldo) === 0" class="text-center text-[10px] font-bold text-emerald-700 pt-1">

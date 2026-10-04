@@ -65,7 +65,7 @@ class CajaTurnosController extends Controller
                 ], 201);
             }
 
-            return redirect()->route('caja.index')->with('success', 'Turno de caja abierto exitosamente con un fondo de $' . number_format($MontoInicial, 2) . ' USD.');
+            return redirect()->route('caja.index')->with('success', 'Turno de caja abierto exitosamente con un fondo de $' . number_format($MontoInicial, 2, ',', '.') . ' USD.');
         }
         catch (Exception $e)
         {
@@ -99,7 +99,7 @@ class CajaTurnosController extends Controller
                 ]);
             }
 
-            $mensaje = 'Turno de caja cerrado exitosamente. Diferencia calculada: $' . number_format((float) $turno->diferencia, 2) . ' USD.';
+            $mensaje = 'Turno de caja cerrado exitosamente. Diferencia calculada: $' . number_format((float) $turno->diferencia, 2, ',', '.') . ' USD.';
             return redirect()->route('caja.index')->with('success', $mensaje);
         }
         catch (Exception $e)

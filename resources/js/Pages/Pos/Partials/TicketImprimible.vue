@@ -1,5 +1,6 @@
 <script setup>
 import { FormatearFechaHora } from '@/Utils/FechaHora';
+import { FormatearNumero, FormatearCantidad } from '@/Utils/FormatoNumero';
 
 const props = defineProps({
     venta: Object,
@@ -49,11 +50,11 @@ const Imprimir = () =>
                     <div class="max-w-[180px]">
                         <div class="font-bold truncate">{{ det.producto?.nombre }}</div>
                         <div class="text-[10px] text-gray-500">
-                            {{ det.cantidad }} x ${{ Number(det.precio_unitario).toFixed(2) }}
+                            {{ FormatearCantidad(det.cantidad) }} x ${{ FormatearNumero(det.precio_unitario) }}
                         </div>
                     </div>
                     <div class="font-bold text-right">
-                        ${{ Number(det.subtotal).toFixed(2) }}
+                        ${{ FormatearNumero(det.subtotal) }}
                     </div>
                 </div>
             </div>
@@ -64,15 +65,15 @@ const Imprimir = () =>
             <div class="space-y-1 text-right">
                 <div v-if="Number(venta.descuento_total) > 0" class="flex justify-between text-gray-500">
                     <span>Descuento:</span>
-                    <span>-${{ Number(venta.descuento_total).toFixed(2) }}</span>
+                    <span>-${{ FormatearNumero(venta.descuento_total) }}</span>
                 </div>
                 <div class="flex justify-between text-sm font-black pt-1">
                     <span>TOTAL USD:</span>
-                    <span>${{ Number(venta.total).toFixed(2) }}</span>
+                    <span>${{ FormatearNumero(venta.total) }}</span>
                 </div>
                 <div class="flex justify-between text-xs font-bold text-gray-700">
-                    <span>TOTAL BS (Tasa {{ Number(venta.tasa_cambio).toFixed(2) }}):</span>
-                    <span>Bs. {{ (Number(venta.total) * Number(venta.tasa_cambio)).toFixed(2) }}</span>
+                    <span>TOTAL BS (Tasa {{ FormatearNumero(venta.tasa_cambio) }}):</span>
+                    <span>Bs. {{ FormatearNumero(Number(venta.total) * Number(venta.tasa_cambio)) }}</span>
                 </div>
             </div>
 
@@ -88,9 +89,9 @@ const Imprimir = () =>
                 >
                     <span>{{ pago.metodo_pago?.nombre }}:</span>
                     <span class="font-bold">
-                        {{ pago.moneda?.simbolo || '$' }} {{ Number(pago.monto).toFixed(2) }}
+                        {{ pago.moneda?.simbolo || '$' }} {{ FormatearNumero(pago.monto) }}
                         <span v-if="!pago.moneda?.es_principal" class="text-[9px] text-gray-500">
-                            (≈${{ Number(pago.monto_base).toFixed(2) }})
+                            (≈${{ FormatearNumero(pago.monto_base) }})
                         </span>
                     </span>
                 </div>
@@ -109,16 +110,16 @@ const Imprimir = () =>
                     <span class="font-bold">{{ venta.cashea_transaccion.referencia_cashea }}</span>
                 </div>
                 <div class="flex justify-between">
-                    <span>Inicial Cobrada ({{ Number(venta.cashea_transaccion.porcentaje_inicial).toFixed(0) }}%):</span>
-                    <span class="font-bold">${{ Number(venta.cashea_transaccion.monto_inicial).toFixed(2) }}</span>
+                    <span>Inicial Cobrada ({{ FormatearNumero(venta.cashea_transaccion.porcentaje_inicial, 0) }}%):</span>
+                    <span class="font-bold">${{ FormatearNumero(venta.cashea_transaccion.monto_inicial) }}</span>
                 </div>
                 <div class="flex justify-between">
                     <span>Monto Financiado:</span>
-                    <span class="font-bold">${{ Number(venta.cashea_transaccion.monto_financiado).toFixed(2) }}</span>
+                    <span class="font-bold">${{ FormatearNumero(venta.cashea_transaccion.monto_financiado) }}</span>
                 </div>
                 <div class="flex justify-between text-indigo-700 font-bold border-t border-amber-200 pt-1">
                     <span>3 Cuotas C/14 días:</span>
-                    <span>${{ Number(venta.cashea_transaccion.monto_cuota).toFixed(2) }} c/u</span>
+                    <span>${{ FormatearNumero(venta.cashea_transaccion.monto_cuota) }} c/u</span>
                 </div>
             </div>
 

@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import { FormatearFechaHora } from '@/Utils/FechaHora';
+import { FormatearNumero } from '@/Utils/FormatoNumero';
 
 const props = defineProps({
     turnoActivo: {
@@ -32,43 +33,59 @@ const formCierre = useForm({
     observaciones: '',
 });
 
-const abrirTurno = () => {
+const abrirTurno = () =>
+{
     formApertura.post(route('caja.abrir'), {
         preserveScroll: true,
-        onSuccess: () => {
+        onSuccess: () =>
+        {
             formApertura.reset();
         },
     });
 };
 
-const abrirModalCierre = () => {
+const abrirModalCierre = () =>
+{
     formCierre.reset();
     formCierre.clearErrors();
     modalCierreAbierto.value = true;
 };
 
-const cerrarModalCierre = () => {
+const cerrarModalCierre = () =>
+{
     modalCierreAbierto.value = false;
     formCierre.reset();
 };
 
-const confirmarCierre = () => {
-    if (!props.turnoActivo) return;
+const confirmarCierre = () =>
+{
+    if (!props.turnoActivo)
+    {
+        return;
+    }
 
     formCierre.post(route('caja.cerrar', { id_caja_turno: props.turnoActivo.id_caja_turno }), {
         preserveScroll: true,
-        onSuccess: () => {
+        onSuccess: () =>
+        {
             cerrarModalCierre();
         },
     });
 };
 
-const calculoDiferencia = computed(() => {
-    if (!props.resumenTurno) return 0;
+const calculoDiferencia = computed(() =>
+{
+    if (!props.resumenTurno)
+    {
+        return 0;
+    }
     const declarado = parseFloat(formCierre.monto_final_declarado);
-    if (isNaN(declarado)) return null;
+    if (isNaN(declarado))
+    {
+        return null;
+    }
     const teorico = props.resumenTurno.monto_teorico_efectivo;
-    return (declarado - teorico).toFixed(2);
+    return declarado - teorico;
 });
 </script>
 
@@ -194,7 +211,7 @@ const calculoDiferencia = computed(() => {
                         <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                             <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Fondo Inicial</span>
                             <div class="mt-2 text-2xl font-black text-gray-900 dark:text-white">
-                                ${{ Number(resumenTurno?.monto_inicial || 0).toFixed(2) }}
+                                ${{ FormatearNumero(resumenTurno?.monto_inicial || 0) }}
                             </div>
                             <span class="text-xs text-gray-500">Monto de apertura registrado</span>
                         </div>
@@ -202,7 +219,7 @@ const calculoDiferencia = computed(() => {
                         <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                             <span class="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Ventas en Efectivo</span>
                             <div class="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-400">
-                                ${{ Number(resumenTurno?.total_efectivo_base || 0).toFixed(2) }}
+                                ${{ FormatearNumero(resumenTurno?.total_efectivo_base || 0) }}
                             </div>
                             <span class="text-xs text-gray-500">Ingresos directos en gaveta</span>
                         </div>
@@ -210,7 +227,7 @@ const calculoDiferencia = computed(() => {
                         <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                             <span class="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Otros Métodos</span>
                             <div class="mt-2 text-2xl font-black text-blue-600 dark:text-blue-400">
-                                ${{ Number(resumenTurno?.total_otros_base || 0).toFixed(2) }}
+                                ${{ FormatearNumero(resumenTurno?.total_otros_base || 0) }}
                             </div>
                             <span class="text-xs text-gray-500">Tarjetas, Pagos Móviles, Cashea</span>
                         </div>
@@ -218,7 +235,7 @@ const calculoDiferencia = computed(() => {
                         <div class="rounded-2xl border border-gray-200 bg-gradient-to-br from-blue-600 to-indigo-700 p-6 text-white shadow-sm">
                             <span class="text-xs font-semibold uppercase tracking-wider text-blue-100">Teórico en Efectivo</span>
                             <div class="mt-2 text-2xl font-black">
-                                ${{ Number(resumenTurno?.monto_teorico_efectivo || 0).toFixed(2) }}
+                                ${{ FormatearNumero(resumenTurno?.monto_teorico_efectivo || 0) }}
                             </div>
                             <span class="text-xs text-blue-100">Fondo + Efectivo recaudado</span>
                         </div>
@@ -270,13 +287,13 @@ const calculoDiferencia = computed(() => {
                                         {{ item.fecha_cierre ? FormatearFechaHora(item.fecha_cierre) : 'En curso' }}
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-4 font-mono text-xs">
-                                        ${{ Number(item.monto_inicial).toFixed(2) }}
+                                        ${{ FormatearNumero(item.monto_inicial) }}
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-4 font-mono text-xs">
-                                        {{ item.monto_final_teorico !== null ? '$' + Number(item.monto_final_teorico).toFixed(2) : '—' }}
+                                        {{ item.monto_final_teorico !== null ? '$' + FormatearNumero(item.monto_final_teorico) : '—' }}
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-4 font-mono text-xs font-bold text-gray-900 dark:text-white">
-                                        {{ item.monto_final_declarado !== null ? '$' + Number(item.monto_final_declarado).toFixed(2) : '—' }}
+                                        {{ item.monto_final_declarado !== null ? '$' + FormatearNumero(item.monto_final_declarado) : '—' }}
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-4 font-mono text-xs font-bold">
                                         <span
@@ -287,7 +304,7 @@ const calculoDiferencia = computed(() => {
                                                     ? 'text-blue-600 dark:text-blue-400' 
                                                     : 'text-rose-600 dark:text-rose-400'"
                                         >
-                                            {{ Number(item.diferencia) > 0 ? '+' : '' }}${{ Number(item.diferencia).toFixed(2) }}
+                                            {{ Number(item.diferencia) > 0 ? '+' : '' }}${{ FormatearNumero(item.diferencia) }}
                                         </span>
                                         <span v-else class="text-gray-400">—</span>
                                     </td>
@@ -384,14 +401,14 @@ const calculoDiferencia = computed(() => {
                     >
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-semibold">Balance Teórico Esperado:</span>
-                            <span class="font-mono font-bold">${{ Number(resumenTurno?.monto_teorico_efectivo || 0).toFixed(2) }}</span>
+                            <span class="font-mono font-bold">${{ FormatearNumero(resumenTurno?.monto_teorico_efectivo || 0) }}</span>
                         </div>
                         <div class="mt-2 flex items-center justify-between border-t pt-2 border-black/10 dark:border-white/10">
                             <span class="text-sm font-bold">
                                 {{ Number(calculoDiferencia) === 0 ? 'Cuadre Perfecto:' : Number(calculoDiferencia) > 0 ? 'Sobrante detectado:' : 'Faltante en gaveta:' }}
                             </span>
                             <span class="font-mono text-lg font-black">
-                                {{ Number(calculoDiferencia) > 0 ? '+' : '' }}${{ calculoDiferencia }}
+                                {{ Number(calculoDiferencia) > 0 ? '+' : '' }}${{ FormatearNumero(calculoDiferencia) }}
                             </span>
                         </div>
                     </div>

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { usePosStore } from '@/Stores/usePosStore';
+import { FormatearNumero } from '@/Utils/FormatoNumero';
 
 const props = defineProps({
     metodosPago: Array,
@@ -285,10 +286,10 @@ const ProcesarCobro = async () => {
                 <div>
                     <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Módulo de Cobro Multimoneda</span>
                     <h3 class="text-2xl font-black text-gray-900 dark:text-gray-100">
-                        Total a Cobrar: <span class="text-indigo-600 dark:text-indigo-400 font-mono">${{ posStore.totalUsd.toFixed(2) }}</span>
+                        Total a Cobrar: <span class="text-indigo-600 dark:text-indigo-400 font-mono">${{ FormatearNumero(posStore.totalUsd) }}</span>
                     </h3>
                     <div class="text-xs text-gray-500 font-mono mt-0.5">
-                        Equivalente: <span class="font-bold text-gray-800 dark:text-gray-200">Bs. {{ posStore.totalVes.toFixed(2) }}</span> (Tasa BCV: {{ tasaVes.toFixed(2) }})
+                        Equivalente: <span class="font-bold text-gray-800 dark:text-gray-200">Bs. {{ FormatearNumero(posStore.totalVes) }}</span> (Tasa BCV: {{ FormatearNumero(tasaVes) }})
                     </div>
                 </div>
 
@@ -355,7 +356,7 @@ const ProcesarCobro = async () => {
                         <!-- Equivalente USD y Referencia -->
                         <div class="w-full sm:w-1/3 flex items-center gap-2">
                             <div class="w-20 text-right font-mono text-xs font-bold text-gray-700 dark:text-gray-300 shrink-0">
-                                ≈ ${{ Number(pago.monto_base).toFixed(2) }}
+                                ≈ ${{ FormatearNumero(pago.monto_base) }}
                             </div>
                             <input
                                 v-if="pago.metodo?.requiere_referencia"
@@ -398,21 +399,21 @@ const ProcesarCobro = async () => {
                     <div class="bg-white/80 dark:bg-gray-800/80 p-2.5 rounded-xl border border-amber-100 dark:border-amber-900/40">
                         <span class="text-gray-400 block text-[10px] uppercase font-bold">Pago Inicial (40%)</span>
                         <span class="font-mono font-bold text-gray-900 dark:text-gray-100 text-sm mt-0.5 block">
-                            ${{ datosCashea.monto_inicial.toFixed(2) }}
+                            ${{ FormatearNumero(datosCashea.monto_inicial) }}
                         </span>
                     </div>
 
                     <div class="bg-white/80 dark:bg-gray-800/80 p-2.5 rounded-xl border border-amber-100 dark:border-amber-900/40">
                         <span class="text-gray-400 block text-[10px] uppercase font-bold">Monto Financiado</span>
                         <span class="font-mono font-bold text-gray-900 dark:text-gray-100 text-sm mt-0.5 block">
-                            ${{ datosCashea.monto_financiado.toFixed(2) }}
+                            ${{ FormatearNumero(datosCashea.monto_financiado) }}
                         </span>
                     </div>
 
                     <div class="bg-white/80 dark:bg-gray-800/80 p-2.5 rounded-xl border border-amber-100 dark:border-amber-900/40">
                         <span class="text-gray-400 block text-[10px] uppercase font-bold">3 Cuotas de:</span>
                         <span class="font-mono font-bold text-indigo-600 dark:text-indigo-400 text-sm mt-0.5 block">
-                            ${{ datosCashea.monto_cuota.toFixed(2) }}
+                            ${{ FormatearNumero(datosCashea.monto_cuota) }}
                         </span>
                     </div>
 
@@ -456,17 +457,17 @@ const ProcesarCobro = async () => {
             <div class="p-4 bg-gray-50 dark:bg-gray-750 rounded-2xl border border-gray-200 dark:border-gray-700 space-y-2 text-xs">
                 <div class="flex justify-between text-gray-600 dark:text-gray-300 font-medium">
                     <span>Total Pagado:</span>
-                    <span class="font-mono font-bold">${{ totalPagadoUsd.toFixed(2) }}</span>
+                    <span class="font-mono font-bold">${{ FormatearNumero(totalPagadoUsd) }}</span>
                 </div>
 
                 <div v-if="saldoRestanteUsd > 0.00" class="flex justify-between text-rose-600 dark:text-rose-400 font-bold">
                     <span>Saldo Pendiente:</span>
-                    <span class="font-mono">${{ saldoRestanteUsd.toFixed(2) }} (Bs. {{ (saldoRestanteUsd * tasaVes).toFixed(2) }})</span>
+                    <span class="font-mono">${{ FormatearNumero(saldoRestanteUsd) }} (Bs. {{ FormatearNumero(saldoRestanteUsd * tasaVes) }})</span>
                 </div>
 
                 <div v-if="cambioVueltoUsd > 0.00" class="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold border-t border-gray-200 dark:border-gray-600 pt-2 text-sm">
                     <span>Cambio / Vuelto al Cliente:</span>
-                    <span class="font-mono">${{ cambioVueltoUsd.toFixed(2) }} / Bs. {{ cambioVueltoVes.toFixed(2) }}</span>
+                    <span class="font-mono">${{ FormatearNumero(cambioVueltoUsd) }} / Bs. {{ FormatearNumero(cambioVueltoVes) }}</span>
                 </div>
             </div>
 

@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import { FormatearFechaHora } from '@/Utils/FechaHora';
+import { FormatearNumero } from '@/Utils/FormatoNumero';
 
 const props = defineProps({
     monedas: {
@@ -77,10 +78,11 @@ const cargarHistorico = async (idMoneda) => {
     }
 };
 
-const calcularInversa = computed(() => {
+const calcularInversa = computed(() =>
+{
     const valor = parseFloat(form.tasa_cambio);
-    if (!valor || valor <= 0) return '0.0000';
-    return (1 / valor).toFixed(6);
+    if (!valor || valor <= 0) return 0;
+    return 1 / valor;
 });
 </script>
 
@@ -141,7 +143,7 @@ const calcularInversa = computed(() => {
                             <span class="text-xs uppercase tracking-wider text-gray-400">Cotización respecto a Base</span>
                             <div class="mt-1 flex items-baseline space-x-2">
                                 <span class="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-                                    {{ Number(moneda.tasa_cambio).toLocaleString('es-VE', { minimumFractionDigits: 4, maximumFractionDigits: 4 }) }}
+                                    {{ FormatearNumero(moneda.tasa_cambio, 4) }}
                                 </span>
                                 <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
                                     {{ moneda.codigo }}
@@ -149,7 +151,7 @@ const calcularInversa = computed(() => {
                             </div>
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                 <span v-if="moneda.es_principal">Equivalencia 1:1 fija en el sistema</span>
-                                <span v-else>1 USD = {{ Number(moneda.tasa_cambio).toFixed(2) }} {{ moneda.simbolo }}</span>
+                                <span v-else>1 USD = {{ FormatearNumero(moneda.tasa_cambio, 2) }} {{ moneda.simbolo }}</span>
                             </p>
                         </div>
 
@@ -231,26 +233,26 @@ const calcularInversa = computed(() => {
                                         {{ item.moneda?.codigo || monedaHistoricoSeleccionada?.codigo }}
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-4 font-mono">
-                                        {{ Number(item.tasa_anterior).toFixed(4) }}
+                                        {{ FormatearNumero(item.tasa_anterior, 4) }}
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-4 font-mono font-bold text-gray-900 dark:text-white">
-                                        {{ Number(item.tasa_nueva).toFixed(4) }}
+                                        {{ FormatearNumero(item.tasa_nueva, 4) }}
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-4 font-mono text-xs">
                                         <span
                                             v-if="item.tasa_nueva > item.tasa_anterior"
                                             class="inline-flex items-center text-rose-600 dark:text-rose-400 font-semibold"
                                         >
-                                            ▲ +{{ (((item.tasa_nueva - item.tasa_anterior) / (item.tasa_anterior || 1)) * 100).toFixed(2) }}%
+                                            ▲ +{{ FormatearNumero(((item.tasa_nueva - item.tasa_anterior) / (item.tasa_anterior || 1)) * 100, 2) }}%
                                         </span>
                                         <span
                                             v-else-if="item.tasa_nueva < item.tasa_anterior"
                                             class="inline-flex items-center text-emerald-600 dark:text-emerald-400 font-semibold"
                                         >
-                                            ▼ {{ (((item.tasa_nueva - item.tasa_anterior) / (item.tasa_anterior || 1)) * 100).toFixed(2) }}%
+                                            ▼ {{ FormatearNumero(((item.tasa_nueva - item.tasa_anterior) / (item.tasa_anterior || 1)) * 100, 2) }}%
                                         </span>
                                         <span v-else class="text-gray-400">
-                                            = 0.00%
+                                            = 0,00%
                                         </span>
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-4 text-xs">
@@ -309,13 +311,13 @@ const calcularInversa = computed(() => {
                         <div>
                             <span class="text-xs text-gray-400">Tasa Actual</span>
                             <p class="font-mono text-lg font-bold text-gray-700 dark:text-gray-300">
-                                {{ Number(monedaSeleccionada?.tasa_cambio).toFixed(4) }}
+                                {{ FormatearNumero(monedaSeleccionada?.tasa_cambio, 4) }}
                             </p>
                         </div>
                         <div>
                             <span class="text-xs text-gray-400">Inversa Aproximada</span>
                             <p class="font-mono text-sm font-medium text-gray-600 dark:text-gray-400">
-                                1 {{ monedaSeleccionada?.codigo }} ≈ ${{ calcularInversa }} USD
+                                1 {{ monedaSeleccionada?.codigo }} ≈ ${{ FormatearNumero(calcularInversa, 4) }} USD
                             </p>
                         </div>
                     </div>

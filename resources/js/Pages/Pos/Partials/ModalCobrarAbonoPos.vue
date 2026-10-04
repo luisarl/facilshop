@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import axios from 'axios';
+import { FormatearNumero } from '@/Utils/FormatoNumero';
 
 const props = defineProps({
     clientes: Array,
@@ -29,7 +30,7 @@ const OpcionesClientesAbono = computed(() =>
 {
     return (props.clientes || []).map((c) => ({
         value: c.id_cliente,
-        label: `${c.nombre} (${c.identificacion}) — Deuda: $${Number(c.saldo_pendiente).toFixed(2)}`
+        label: `${c.nombre} (${c.identificacion}) — Deuda: $${FormatearNumero(c.saldo_pendiente)}`
     }));
 });
 
@@ -326,10 +327,10 @@ const ProcesarAbono = async () =>
                     <span class="text-gray-500 dark:text-gray-400 font-medium">Deuda Pendiente Actual:</span>
                     <div class="text-right font-mono">
                         <span class="text-base font-black text-rose-600 dark:text-rose-400">
-                            ${{ Number(clienteAbonar.saldo_pendiente).toFixed(2) }}
+                            ${{ FormatearNumero(clienteAbonar.saldo_pendiente) }}
                         </span>
                         <span class="block text-[11px] text-gray-500 dark:text-gray-400">
-                            ≈ Bs. {{ (Number(clienteAbonar.saldo_pendiente) * tasaVes).toFixed(2) }}
+                            ≈ Bs. {{ FormatearNumero(Number(clienteAbonar.saldo_pendiente) * tasaVes) }}
                         </span>
                     </div>
                 </div>
@@ -350,14 +351,14 @@ const ProcesarAbono = async () =>
                         @click="AplicarMontoTotal"
                         class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-lg transition"
                     >
-                        Total ($ {{ Number(clienteAbonar.saldo_pendiente).toFixed(2) }})
+                        Total ($ {{ FormatearNumero(clienteAbonar.saldo_pendiente) }})
                     </button>
                     <button
                         type="button"
                         @click="AplicarPorcentaje(50)"
                         class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold rounded-lg transition"
                     >
-                        50% ($ {{ (Number(clienteAbonar.saldo_pendiente) / 2).toFixed(2) }})
+                        50% ($ {{ FormatearNumero(Number(clienteAbonar.saldo_pendiente) / 2) }})
                     </button>
                 </div>
 
@@ -404,7 +405,7 @@ const ProcesarAbono = async () =>
                     <div class="p-2.5 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-150 dark:border-gray-600/50 flex justify-between items-center text-xs">
                         <span class="text-gray-500 dark:text-gray-400 font-medium">Equivalente USD:</span>
                         <span class="font-mono font-black text-gray-800 dark:text-gray-200 text-sm">
-                            ${{ Number(montoBaseUsd).toFixed(2) }}
+                            ${{ FormatearNumero(montoBaseUsd) }}
                         </span>
                     </div>
 
@@ -433,7 +434,7 @@ const ProcesarAbono = async () =>
                 <div class="p-3 bg-indigo-50/70 dark:bg-indigo-950/30 rounded-2xl border border-indigo-100 dark:border-indigo-900/50 flex justify-between items-center text-xs font-semibold">
                     <span class="text-indigo-950 dark:text-indigo-200">Nuevo Saldo Deudor Restante:</span>
                     <span class="font-mono font-black text-indigo-700 dark:text-indigo-300 text-sm">
-                        ${{ nuevoSaldoProyectado.toFixed(2) }}
+                        ${{ FormatearNumero(nuevoSaldoProyectado) }}
                     </span>
                 </div>
             </div>

@@ -3,6 +3,7 @@ import { ref, reactive, computed } from 'vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { FormatearFechaHora } from '@/Utils/FechaHora';
+import { FormatearNumero, FormatearCantidad } from '@/Utils/FormatoNumero';
 
 const props = defineProps({
     productos: Object,
@@ -503,18 +504,18 @@ const VerMovimientos = async (producto) =>
                                     <td class="px-6 py-4 text-xs text-gray-600 dark:text-gray-300">
                                         <span class="font-semibold">{{ producto.unidad?.nombre || 'UND' }}</span>
                                         <div v-if="producto.unidad_secundaria" class="text-gray-400 mt-0.5">
-                                            1 {{ producto.unidad_secundaria.nombre }} = {{ Number(producto.equivalencia_unidad_secundaria) }} {{ producto.unidad?.nombre }}
+                                            1 {{ producto.unidad_secundaria.nombre }} = {{ FormatearCantidad(producto.equivalencia_unidad_secundaria) }} {{ producto.unidad?.nombre }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 text-right font-mono text-sm text-gray-600 dark:text-gray-300">
-                                        ${{ Number(producto.precio_costo).toFixed(2) }}
+                                        ${{ FormatearNumero(producto.precio_costo) }}
                                     </td>
                                     <td class="px-6 py-4 text-right">
                                         <div class="text-sm font-bold text-emerald-600 dark:text-emerald-400 font-mono">
-                                            ${{ Number(producto.precio_venta).toFixed(2) }}
+                                            ${{ FormatearNumero(producto.precio_venta) }}
                                         </div>
                                         <div class="text-xs text-gray-400 font-mono">
-                                            Bs. {{ Number(producto.precio_venta_ves).toFixed(2) }}
+                                            Bs. {{ FormatearNumero(producto.precio_venta_ves) }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 text-center">
@@ -527,10 +528,10 @@ const VerMovimientos = async (producto) =>
                                             ]"
                                         >
                                             <span v-if="producto.es_stock_bajo" class="w-1.5 h-1.5 rounded-full bg-rose-500 mr-1.5 animate-ping"></span>
-                                            {{ producto.stock_actual }} {{ producto.unidad?.abreviatura || 'UND' }}
+                                            {{ FormatearCantidad(producto.stock_actual) }} {{ producto.unidad?.abreviatura || 'UND' }}
                                         </span>
                                         <div v-if="producto.es_stock_bajo" class="text-[10px] text-rose-500 font-semibold mt-0.5">
-                                            Mín: {{ producto.stock_minimo }}
+                                            Mín: {{ FormatearCantidad(producto.stock_minimo) }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 text-center">
@@ -956,13 +957,13 @@ const VerMovimientos = async (producto) =>
                                     </span>
                                 </td>
                                 <td class="px-4 py-2.5 text-right font-mono font-bold">
-                                    {{ mov.cantidad }}
+                                    {{ FormatearCantidad(mov.cantidad) }}
                                 </td>
                                 <td class="px-4 py-2.5 text-center font-mono text-gray-500">
-                                    {{ mov.stock_anterior }}
+                                    {{ FormatearCantidad(mov.stock_anterior) }}
                                 </td>
                                 <td class="px-4 py-2.5 text-center font-mono font-bold text-gray-900 dark:text-gray-100">
-                                    {{ mov.nuevo_stock }}
+                                    {{ FormatearCantidad(mov.nuevo_stock) }}
                                 </td>
                                 <td class="px-4 py-2.5 text-gray-500 font-mono">
                                     {{ mov.documento_referencia || '—' }}

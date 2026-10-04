@@ -8,6 +8,7 @@ import TicketImprimible from './Partials/TicketImprimible.vue';
 import ModalNuevoClientePos from './Partials/ModalNuevoClientePos.vue';
 import ModalCobrarAbonoPos from './Partials/ModalCobrarAbonoPos.vue';
 import TicketAbonoImprimible from './Partials/TicketAbonoImprimible.vue';
+import { FormatearNumero, FormatearCantidad } from '@/Utils/FormatoNumero';
 
 const props = defineProps({
     turno_activo: Object,
@@ -444,7 +445,7 @@ const MostrarAlerta = (mensaje, tipo = 'info') =>
                 <!-- TASA BCV DINÁMICA -->
                 <div class="hidden md:flex items-center gap-2 px-3 py-1 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 rounded-xl text-xs font-mono">
                     <span class="text-indigo-600 dark:text-indigo-400 font-bold">BCV:</span>
-                    <span class="font-bold text-indigo-900 dark:text-indigo-200">1 USD = {{ tasa_ves.toFixed(2) }} Bs.</span>
+                    <span class="font-bold text-indigo-900 dark:text-indigo-200">1 USD = {{ FormatearNumero(tasa_ves) }} Bs.</span>
                 </div>
             </div>
 
@@ -586,7 +587,7 @@ const MostrarAlerta = (mensaje, tipo = 'info') =>
                                                 : (producto.es_stock_bajo ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300')
                                         ]"
                                     >
-                                        {{ producto.stock_actual }} {{ producto.unidad?.abreviatura || 'UND' }}
+                                        {{ FormatearCantidad(producto.stock_actual) }} {{ producto.unidad?.abreviatura || 'UND' }}
                                     </span>
                                 </div>
 
@@ -598,10 +599,10 @@ const MostrarAlerta = (mensaje, tipo = 'info') =>
                             <div class="mt-3 pt-2 border-t border-gray-100 dark:border-gray-700 flex justify-between items-end">
                                 <div>
                                     <div class="text-base font-black font-mono text-indigo-600 dark:text-indigo-400">
-                                        ${{ Number(producto.precio_venta).toFixed(2) }}
+                                        ${{ FormatearNumero(producto.precio_venta) }}
                                     </div>
                                     <div class="text-[11px] font-mono text-gray-400">
-                                        Bs. {{ Number(producto.precio_venta_ves).toFixed(2) }}
+                                        Bs. {{ FormatearNumero(producto.precio_venta_ves) }}
                                     </div>
                                 </div>
 
@@ -658,10 +659,10 @@ const MostrarAlerta = (mensaje, tipo = 'info') =>
                         <div>
                             <span class="text-[10px] font-bold text-rose-500 uppercase block">Saldo Deudor</span>
                             <span class="font-mono font-black text-rose-700 dark:text-rose-300 text-sm">
-                                ${{ Number(posStore.clienteSeleccionado.saldo_pendiente).toFixed(2) }}
+                                ${{ FormatearNumero(posStore.clienteSeleccionado.saldo_pendiente) }}
                             </span>
                             <span class="text-[10px] text-gray-500 font-mono block">
-                                ≈ Bs. {{ (Number(posStore.clienteSeleccionado.saldo_pendiente) * tasa_ves).toFixed(2) }}
+                                ≈ Bs. {{ FormatearNumero(Number(posStore.clienteSeleccionado.saldo_pendiente) * tasa_ves) }}
                             </span>
                         </div>
 
@@ -716,7 +717,7 @@ const MostrarAlerta = (mensaje, tipo = 'info') =>
                                     {{ item.nombre }}
                                 </div>
                                 <div class="text-[10px] text-gray-400 font-mono">
-                                    ${{ Number(item.precio_unitario).toFixed(2) }} c/u
+                                    ${{ FormatearNumero(item.precio_unitario) }} c/u
                                 </div>
                             </div>
 
@@ -774,7 +775,7 @@ const MostrarAlerta = (mensaje, tipo = 'info') =>
                             </div>
 
                             <div class="font-mono font-bold text-sm text-gray-900 dark:text-gray-100 text-right">
-                                ${{ item.subtotal.toFixed(2) }}
+                                ${{ FormatearNumero(item.subtotal) }}
                             </div>
                         </div>
                     </div>
@@ -791,21 +792,21 @@ const MostrarAlerta = (mensaje, tipo = 'info') =>
                     <div class="space-y-1.5 text-xs">
                         <div class="flex justify-between text-gray-500">
                             <span>Subtotal ({{ posStore.totalItems }} items):</span>
-                            <span class="font-mono font-bold">${{ posStore.subtotal.toFixed(2) }}</span>
+                            <span class="font-mono font-bold">${{ FormatearNumero(posStore.subtotal) }}</span>
                         </div>
                         <div v-if="posStore.descuentoTotal > 0" class="flex justify-between text-rose-500">
                             <span>Descuento:</span>
-                            <span class="font-mono font-bold">-${{ posStore.descuentoTotal.toFixed(2) }}</span>
+                            <span class="font-mono font-bold">-${{ FormatearNumero(posStore.descuentoTotal) }}</span>
                         </div>
                         <div class="flex justify-between items-baseline pt-2 border-t border-gray-200 dark:border-gray-700">
                             <span class="text-sm font-black text-gray-900 dark:text-gray-100">TOTAL USD:</span>
                             <span class="text-2xl font-black font-mono text-indigo-600 dark:text-indigo-400">
-                                ${{ posStore.totalUsd.toFixed(2) }}
+                                ${{ FormatearNumero(posStore.totalUsd) }}
                             </span>
                         </div>
                         <div class="flex justify-between text-xs font-mono font-bold text-gray-500">
                             <span>TOTAL BS:</span>
-                            <span>Bs. {{ posStore.totalVes.toFixed(2) }}</span>
+                            <span>Bs. {{ FormatearNumero(posStore.totalVes) }}</span>
                         </div>
                     </div>
 

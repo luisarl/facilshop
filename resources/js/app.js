@@ -8,6 +8,7 @@ import { createPinia } from 'pinia';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import SelectFiltro from './Components/SelectFiltro.vue';
 import { FormatearFecha, FormatearHora, FormatearFechaHora } from './Utils/FechaHora';
+import { FormatearNumero, FormatearMoneda, FormatearCantidad, ParsearNumero } from './Utils/FormatoNumero';
 
 const NombreApp = import.meta.env.VITE_APP_NAME || 'Laravel';
 const pinia = createPinia();
@@ -34,6 +35,10 @@ createInertiaApp(
         AplicacionVue.config.globalProperties.$FormatearFecha = FormatearFecha;
         AplicacionVue.config.globalProperties.$FormatearHora = FormatearHora;
         AplicacionVue.config.globalProperties.$FormatearFechaHora = FormatearFechaHora;
+        AplicacionVue.config.globalProperties.$FormatearNumero = FormatearNumero;
+        AplicacionVue.config.globalProperties.$FormatearMoneda = FormatearMoneda;
+        AplicacionVue.config.globalProperties.$FormatearCantidad = FormatearCantidad;
+        AplicacionVue.config.globalProperties.$ParsearNumero = ParsearNumero;
 
         return AplicacionVue.mount(el);
     },

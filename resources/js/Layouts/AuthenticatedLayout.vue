@@ -4,6 +4,7 @@ import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import { Link, usePage } from '@inertiajs/vue3';
+import { FormatearNumero } from '@/Utils/FormatoNumero';
 
 const page = usePage();
 
@@ -21,7 +22,7 @@ const flash = computed(() => page.props.flash || {});
 const TasaBcvFormateada = computed(() =>
 {
     const tasa = Number(infoGlobal.value?.tasa_bcv || 1.0);
-    return tasa.toFixed(2);
+    return FormatearNumero(tasa, 2);
 });
 
 const InicializarTema = () =>
